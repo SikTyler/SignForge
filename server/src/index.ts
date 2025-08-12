@@ -1,35 +1,40 @@
-import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import path from 'node:path';
-import { registerRoutes } from './routes';
-import fs from 'fs';
-import './db'; // Initialize database
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 const app = express();
+const PORT = process.env.PORT || 3001;
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Serve uploads statically
-const uploadsPath = path.resolve(process.cwd(), 'server', 'uploads');
-if (!fs.existsSync(uploadsPath)) fs.mkdirSync(uploadsPath, { recursive: true });
-if (!fs.existsSync(path.join(uploadsPath, 'drawings'))) fs.mkdirSync(path.join(uploadsPath, 'drawings'), { recursive: true });
-if (!fs.existsSync(path.join(uploadsPath, 'logos'))) fs.mkdirSync(path.join(uploadsPath, 'logos'), { recursive: true });
-app.use('/uploads', express.static(uploadsPath));
-
-// Health
-app.get('/api/health', (_req, res) => {
-  res.json({ ok: true });
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
 });
 
-// API routes
-registerRoutes(app);
+// Basic error handling
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Something went wrong!' });
+});
 
-const PORT = Number(process.env.PORT || 3001);
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(404).json({ error: 'Not found' });
+});
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`API on http://localhost:${PORT}`);
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`📊 Health check: http://localhost:${PORT}/health`);
 });
 
 

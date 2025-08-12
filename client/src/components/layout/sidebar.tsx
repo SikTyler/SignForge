@@ -6,7 +6,9 @@ import {
   Tag, 
   Eye, 
   Handshake,
-  Upload
+  Upload,
+  Calculator,
+  FileText as FileTextIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -29,6 +31,18 @@ export default function Sidebar({ projectId }: SidebarProps) {
       href: `/projects/${projectId}/drawings`,
       icon: FileText,
       current: location === `/projects/${projectId}/drawings`,
+    },
+    {
+      name: "Takeoffs & ROM",
+      href: `/projects/${projectId}/takeoffs`,
+      icon: Calculator,
+      current: location === `/projects/${projectId}/takeoffs`,
+    },
+    {
+      name: "Code Summary",
+      href: `/projects/${projectId}/code-summary`,
+      icon: FileTextIcon,
+      current: location === `/projects/${projectId}/code-summary`,
     },
     {
       name: "Sign Types",

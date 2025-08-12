@@ -1,12 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Upload, FileText, Download, Eye } from "lucide-react";
-import { useState } from "react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Upload, FileText, Download, Eye, Edit, Plus, Trash2 } from "lucide-react";
+import { useState, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import MainLayout from "@/components/layout/main-layout";
@@ -17,354 +19,450 @@ interface DrawingsProps {
   projectId: string;
 }
 
+interface DrawingSet {
+  id: string;
+  projectId: string;
+  version: string;
+  uploadedBy: string;
+  notes: string | null;
+  createdAt: string;
+  fileCount: number;
+  files: DrawingFile[];
+}
+
+interface DrawingFile {
+  id: string;
+  drawingSetId: string;
+  storageUrl: string;
+  originalFilename: string;
+  displayName: string;
+  scale: string | null;
+  shortCode: string | null;
+  pageCount: number | null;
+  createdAt: string;
+}
+
 export default function Drawings({ projectId }: DrawingsProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [notes, setNotes] = useState("");
-  const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+  const [isCreatingSet, setIsCreatingSet] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [editingFile, setEditingFile] = useState<DrawingFile | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [newSetData, setNewSetData] = useState({
+    version: "1.0",
+    notes: ""
+  });
 
-  const { data: drawings, isLoading } = useQuery({
+  const { data: drawingSets, isLoading } = useQuery({
     queryKey: [`/api/projects/${projectId}/drawings`],
   });
 
-  const uploadMutation = useMutation({
-    mutationFn: async (formData: FormData) => {
-      const res = await fetch(`/api/projects/${projectId}/drawings`, {
+  const createDrawingSetMutation = useMutation({
+    mutationFn: async (data: { version: string; notes: string }) => {
+      return apiRequest(`/api/projects/${projectId}/drawing-sets`, {
         method: "POST",
-        body: formData,
-        credentials: "include",
+        body: JSON.stringify(data),
       });
-      
-      if (!res.ok) {
-        const error = await res.text();
-        throw new Error(error || "Upload failed");
-      }
-      
-      return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}/drawings`] });
-      setSelectedFile(null);
-      setNotes("");
-      setIsUploadOpen(false);
+      setIsCreatingSet(false);
+      setNewSetData({ version: "1.0", notes: "" });
       toast({
-        title: "Upload successful",
-        description: "Drawing set has been uploaded successfully.",
+        title: "Drawing set created",
+        description: `Version ${data.version} created successfully.`,
       });
     },
-    onError: (error: any) => {
+    onError: (error) => {
       toast({
-        title: "Upload failed",
-        description: error.message,
+        title: "Error",
+        description: "Failed to create drawing set.",
         variant: "destructive",
       });
     },
   });
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const allowedTypes = ['.pdf', '.jpg', '.jpeg', '.png'];
-      const fileExt = '.' + file.name.split('.').pop()?.toLowerCase();
+  const uploadFilesMutation = useMutation({
+    mutationFn: async ({ drawingSetId, files }: { drawingSetId: string; files: FileList }) => {
+      const formData = new FormData();
+      Array.from(files).forEach((file) => {
+        formData.append("files", file);
+      });
       
-      if (!allowedTypes.includes(fileExt)) {
-        toast({
-          title: "Invalid file type",
-          description: "Please select a PDF, JPG, or PNG file.",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      if (file.size > 10 * 1024 * 1024) {
-        toast({
-          title: "File too large",
-          description: "Please select a file smaller than 10MB.",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      setSelectedFile(file);
-    }
-  };
-
-  const handleUpload = () => {
-    if (!selectedFile) {
+      return apiRequest(`/api/drawing-sets/${drawingSetId}/files`, {
+        method: "POST",
+        body: formData,
+        headers: {}, // Let browser set Content-Type for FormData
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}/drawings`] });
+      setIsUploading(false);
+      setIsUploadDialogOpen(false);
       toast({
-        title: "No file selected",
-        description: "Please select a file to upload.",
+        title: "Files uploaded",
+        description: "PDF files uploaded successfully.",
+      });
+    },
+    onError: (error) => {
+      setIsUploading(false);
+      toast({
+        title: "Error",
+        description: "Failed to upload files.",
         variant: "destructive",
       });
-      return;
-    }
+    },
+  });
 
-    const formData = new FormData();
-    formData.append('file', selectedFile);
-    formData.append('notes', notes);
+  const updateFileMutation = useMutation({
+    mutationFn: async ({ fileId, data }: { fileId: string; data: Partial<DrawingFile> }) => {
+      return apiRequest(`/api/drawing-files/${fileId}`, {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}/drawings`] });
+      setEditingFile(null);
+      toast({
+        title: "File updated",
+        description: "File metadata updated successfully.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update file metadata.",
+        variant: "destructive",
+      });
+    },
+  });
 
-    uploadMutation.mutate(formData);
+  const handleCreateDrawingSet = () => {
+    createDrawingSetMutation.mutate(newSetData);
   };
 
-  const getFileIcon = (filePath: string) => {
-    const ext = filePath.split('.').pop()?.toLowerCase();
-    return ext === 'pdf' ? FileText : Eye;
+  const handleFileUpload = (drawingSetId: string) => {
+    if (fileInputRef.current?.files) {
+      setIsUploading(true);
+      uploadFilesMutation.mutate({
+        drawingSetId,
+        files: fileInputRef.current.files,
+      });
+    }
+  };
+
+  const handleEditFile = (file: DrawingFile) => {
+    setEditingFile(file);
+  };
+
+  const handleSaveFileEdit = () => {
+    if (editingFile) {
+      updateFileMutation.mutate({
+        fileId: editingFile.id,
+        data: {
+          displayName: editingFile.displayName,
+          scale: editingFile.scale,
+          shortCode: editingFile.shortCode,
+        },
+      });
+    }
   };
 
   if (isLoading) {
     return (
-      <MainLayout projectId={projectId}>
-        <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-48 bg-gray-200 rounded-lg"></div>
-            ))}
+      <div className="min-h-screen bg-gray-50 p-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="animate-pulse space-y-6">
+            <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+            <div className="grid grid-cols-1 gap-6">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="h-48 bg-gray-200 rounded-lg"></div>
+              ))}
+            </div>
           </div>
         </div>
-      </MainLayout>
+      </div>
     );
   }
 
-  if (!drawings || drawings.length === 0) {
+  if (!drawingSets || drawingSets.length === 0) {
     return (
-      <MainLayout projectId={projectId}>
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Drawing Sets</h1>
-          <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-primary-500 hover:bg-primary-600">
-                <Upload className="h-4 w-4 mr-2" />
-                Upload Drawing Set
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Upload Drawing Set</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="file">Select File</Label>
-                  <Input
-                    id="file"
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={handleFileSelect}
-                  />
-                  <p className="text-sm text-gray-500 mt-1">
-                    PDF, JPG, PNG up to 10MB
-                  </p>
-                </div>
-                
-                {selectedFile && (
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <p className="text-sm font-medium">{selectedFile.name}</p>
-                    <p className="text-xs text-gray-500">
-                      {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                    </p>
-                  </div>
-                )}
-                
-                <div>
-                  <Label htmlFor="notes">Notes (Optional)</Label>
-                  <Textarea
-                    id="notes"
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Add any notes about this drawing set..."
-                    rows={3}
-                  />
-                </div>
-                
-                <div className="flex justify-end space-x-2">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setIsUploadOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button 
-                    onClick={handleUpload}
-                    disabled={!selectedFile || uploadMutation.isPending}
-                    className="bg-primary-500 hover:bg-primary-600"
-                  >
-                    {uploadMutation.isPending ? "Uploading..." : "Upload"}
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+      <div className="min-h-screen bg-gray-50 p-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-2xl font-bold text-gray-900">Drawings</h1>
+            <Button onClick={() => setIsUploadDialogOpen(true)}>
+              <Upload className="w-4 h-4 mr-2" />
+              Upload Drawings
+            </Button>
+          </div>
+          <EmptyState
+            icon={FileText}
+            title="No drawing sets found"
+            description="Upload your first set of PDF drawings to get started with takeoffs."
+            action={{
+              label: "Upload Drawings",
+              onClick: () => setIsUploadDialogOpen(true),
+            }}
+          />
         </div>
-        <EmptyState
-          icon={FileText}
-          title="No drawing sets uploaded"
-          description="Get started by uploading your first drawing set for this project."
-          action={{
-            label: "Upload Drawing Set",
-            onClick: () => setIsUploadOpen(true),
-          }}
-        />
-      </MainLayout>
+
+        {/* Upload Dialog */}
+        <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Upload Drawing Set</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="version">Version</Label>
+                <Input
+                  id="version"
+                  value={newSetData.version}
+                  onChange={(e) => setNewSetData({ ...newSetData, version: e.target.value })}
+                  placeholder="1.0"
+                />
+              </div>
+              <div>
+                <Label htmlFor="notes">Notes</Label>
+                <Textarea
+                  id="notes"
+                  value={newSetData.notes}
+                  onChange={(e) => setNewSetData({ ...newSetData, notes: e.target.value })}
+                  placeholder="Optional notes about this drawing set..."
+                />
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={() => setIsUploadDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleCreateDrawingSet} disabled={isCreatingSet}>
+                  {isCreatingSet ? "Creating..." : "Create Set"}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
     );
   }
 
   return (
-    <MainLayout projectId={projectId}>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">Drawing Sets</h1>
-          <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-primary-500 hover:bg-primary-600">
-                <Upload className="h-4 w-4 mr-2" />
-                Upload Drawing Set
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Upload Drawing Set</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="file">Select File</Label>
-                  <Input
-                    id="file"
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={handleFileSelect}
-                  />
-                  <p className="text-sm text-gray-500 mt-1">
-                    PDF, JPG, PNG up to 10MB
-                  </p>
-                </div>
-                
-                {selectedFile && (
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <p className="text-sm font-medium">{selectedFile.name}</p>
-                    <p className="text-xs text-gray-500">
-                      {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+    <div className="min-h-screen bg-gray-50 p-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-2xl font-bold text-gray-900">Drawings</h1>
+          <Button onClick={() => setIsUploadDialogOpen(true)}>
+            <Upload className="w-4 h-4 mr-2" />
+            Upload Drawings
+          </Button>
+        </div>
+
+        <div className="space-y-6">
+          {drawingSets.map((set: DrawingSet) => (
+            <Card key={set.id}>
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      Version {set.version}
+                      <Badge variant="secondary">{set.fileCount} files</Badge>
+                    </CardTitle>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Uploaded {formatDistanceToNow(new Date(set.createdAt), { addSuffix: true })} by {set.uploadedBy}
                     </p>
+                    {set.notes && (
+                      <p className="text-sm text-gray-600 mt-1">{set.notes}</p>
+                    )}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setNewSetData({ version: set.version, notes: set.notes || "" });
+                      setIsUploadDialogOpen(true);
+                    }}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Files
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {set.files && set.files.length > 0 ? (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Display Name</TableHead>
+                        <TableHead>Scale</TableHead>
+                        <TableHead>Short Code</TableHead>
+                        <TableHead>Pages</TableHead>
+                        <TableHead>Original Filename</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {set.files.map((file) => (
+                        <TableRow key={file.id}>
+                          <TableCell className="font-medium">{file.displayName}</TableCell>
+                          <TableCell>{file.scale || "-"}</TableCell>
+                          <TableCell>{file.shortCode || "-"}</TableCell>
+                          <TableCell>{file.pageCount || "?"}</TableCell>
+                          <TableCell className="text-sm text-gray-600">
+                            {file.originalFilename}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEditFile(file)}
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => window.open(file.storageUrl, "_blank")}
+                              >
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => window.open(file.storageUrl, "_blank")}
+                              >
+                                <Download className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    No files in this drawing set yet.
                   </div>
                 )}
-                
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Upload Dialog */}
+        <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Upload Drawing Set</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="version">Version</Label>
+                <Input
+                  id="version"
+                  value={newSetData.version}
+                  onChange={(e) => setNewSetData({ ...newSetData, version: e.target.value })}
+                  placeholder="1.0"
+                />
+              </div>
+              <div>
+                <Label htmlFor="notes">Notes</Label>
+                <Textarea
+                  id="notes"
+                  value={newSetData.notes}
+                  onChange={(e) => setNewSetData({ ...newSetData, notes: e.target.value })}
+                  placeholder="Optional notes about this drawing set..."
+                />
+              </div>
+              <div>
+                <Label htmlFor="files">PDF Files</Label>
+                <Input
+                  id="files"
+                  type="file"
+                  multiple
+                  accept=".pdf"
+                  ref={fileInputRef}
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files.length > 0) {
+                      // Auto-create set and upload files
+                      createDrawingSetMutation.mutate(newSetData, {
+                        onSuccess: (data) => {
+                          handleFileUpload(data.id);
+                        },
+                      });
+                    }
+                  }}
+                />
+                <p className="text-sm text-gray-600 mt-1">
+                  Select one or more PDF files to upload
+                </p>
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={() => setIsUploadDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleCreateDrawingSet} 
+                  disabled={isCreatingSet || isUploading}
+                >
+                  {isCreatingSet ? "Creating..." : isUploading ? "Uploading..." : "Create Set"}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit File Dialog */}
+        <Dialog open={!!editingFile} onOpenChange={() => setEditingFile(null)}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Edit File Metadata</DialogTitle>
+            </DialogHeader>
+            {editingFile && (
+              <div className="space-y-4">
                 <div>
-                  <Label htmlFor="notes">Notes (Optional)</Label>
-                  <Textarea
-                    id="notes"
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Add any notes about this drawing set..."
-                    rows={3}
+                  <Label htmlFor="displayName">Display Name</Label>
+                  <Input
+                    id="displayName"
+                    value={editingFile.displayName}
+                    onChange={(e) => setEditingFile({ ...editingFile, displayName: e.target.value })}
                   />
                 </div>
-                
+                <div>
+                  <Label htmlFor="scale">Scale</Label>
+                  <Input
+                    id="scale"
+                    value={editingFile.scale || ""}
+                    onChange={(e) => setEditingFile({ ...editingFile, scale: e.target.value })}
+                    placeholder="e.g., 1/4&quot; = 1'-0&quot;"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="shortCode">Short Code</Label>
+                  <Input
+                    id="shortCode"
+                    value={editingFile.shortCode || ""}
+                    onChange={(e) => setEditingFile({ ...editingFile, shortCode: e.target.value })}
+                    placeholder="e.g., A1.1, A1.2"
+                  />
+                </div>
                 <div className="flex justify-end space-x-2">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setIsUploadOpen(false)}
-                  >
+                  <Button variant="outline" onClick={() => setEditingFile(null)}>
                     Cancel
                   </Button>
-                  <Button 
-                    onClick={handleUpload}
-                    disabled={!selectedFile || uploadMutation.isPending}
-                    className="bg-primary-500 hover:bg-primary-600"
-                  >
-                    {uploadMutation.isPending ? "Uploading..." : "Upload"}
+                  <Button onClick={handleSaveFileEdit} disabled={updateFileMutation.isPending}>
+                    {updateFileMutation.isPending ? "Saving..." : "Save Changes"}
                   </Button>
                 </div>
               </div>
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {drawings.map((drawing: any) => {
-            const FileIcon = getFileIcon(drawing.filePath);
-            const isPdf = drawing.filePath.toLowerCase().includes('.pdf');
-            
-            return (
-              <Card key={drawing.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-center space-x-3 mb-4">
-                    <div className="h-12 w-12 bg-primary-100 rounded-lg flex items-center justify-center">
-                      <FileIcon className="h-6 w-6 text-primary-600" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
-                        Drawing Set #{drawing.id.slice(-6)}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {isPdf ? 'PDF Document' : 'Image File'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {drawing.notes && (
-                    <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                      <p className="text-sm text-gray-700">{drawing.notes}</p>
-                    </div>
-                  )}
-
-                  <div className="space-y-2 mb-4">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Uploaded:</span>
-                      <span className="text-gray-500">
-                        {formatDistanceToNow(new Date(drawing.uploadedAt), { addSuffix: true })}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex space-x-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1"
-                      onClick={() => window.open(drawing.filePath, '_blank')}
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
-                      {isPdf ? 'Preview' : 'View'}
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1"
-                      onClick={() => {
-                        const link = document.createElement('a');
-                        link.href = drawing.filePath;
-                        link.download = `drawing-set-${drawing.id.slice(-6)}`;
-                        link.click();
-                      }}
-                    >
-                      <Download className="h-4 w-4 mr-1" />
-                      Download
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-
-        {drawings.length > 0 && (
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold text-gray-900">Summary</h3>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-gray-900">
-                    {drawings.length}
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    Drawing Set{drawings.length !== 1 ? 's' : ''} Uploaded
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
-    </MainLayout>
+    </div>
   );
 }

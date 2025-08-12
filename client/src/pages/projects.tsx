@@ -1,17 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Plus, Building2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-<<<<<<< HEAD
-<<<<<<< HEAD
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
+import EmptyState from "@/components/common/empty-state";
+import NewProjectDialog from "@/components/projects/new-project-dialog";
 
 interface Project {
   id: string;
@@ -23,26 +17,16 @@ interface Project {
   createdAt: string;
 }
 
-const createProjectSchema = z.object({
-  name: z.string().min(1, "Project name is required"),
-  address: z.string().optional(), 
-  clientOrg: z.string().optional(),
-  status: z.enum(["active", "pending", "completed", "on_hold"]).default("active"),
-  logo: z.instanceof(File).optional()
-});
-
-type CreateProjectForm = z.infer<typeof createProjectSchema>;
-=======
-import EmptyState from "@/components/common/empty-state";
->>>>>>> parent of 27122f1 (Add takeoff functionality for project sign management)
-=======
-import EmptyState from "@/components/common/empty-state";
->>>>>>> parent of 27122f1 (Add takeoff functionality for project sign management)
-
 export default function Projects() {
+  const [, setLocation] = useLocation();
   const { data: projects, isLoading } = useQuery({
     queryKey: ["/api/projects"],
   });
+
+  const handleProjectCreated = (projectId: string) => {
+    // Navigate to the new project
+    setLocation(`/projects/${projectId}`);
+  };
 
   if (isLoading) {
     return (
@@ -67,10 +51,7 @@ export default function Projects() {
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-2xl font-bold text-gray-900">Projects</h1>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              New Project
-            </Button>
+            <NewProjectDialog onProjectCreated={handleProjectCreated} />
           </div>
           <EmptyState
             icon={Building2}
@@ -78,7 +59,7 @@ export default function Projects() {
             description="Get started by creating your first signage project."
             action={{
               label: "Create Project",
-              onClick: () => console.log("Create project"),
+              onClick: () => handleProjectCreated(""),
             }}
           />
         </div>
@@ -91,41 +72,52 @@ export default function Projects() {
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-bold text-gray-900">Projects</h1>
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            New Project
-          </Button>
+          <NewProjectDialog onProjectCreated={handleProjectCreated} />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects.map((project: any) => (
+          {projects.map((project: Project) => (
             <Link key={project.id} href={`/projects/${project.id}`}>
-              <Card className="hover:shadow-md transition-shadow cursor-pointer">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-4">
-                    <h3 className="font-semibold text-gray-900 line-clamp-2">
-                      {project.name}
-                    </h3>
-                    <Badge variant="secondary" className="ml-2">
-                      {project.status}
-                    </Badge>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-lg text-gray-900 mb-1">
+                        {project.name}
+                      </h3>
+                      <p className="text-sm text-gray-600 mb-2">
+                        {project.address || "No address"}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {project.clientOrg || "No client"}
+                      </p>
+                    </div>
+                    {project.logoPath && (
+                      <img
+                        src={`/uploads/logos/${project.logoPath}`}
+                        alt="Project logo"
+                        className="w-12 h-12 rounded-lg object-cover"
+                      />
+                    )}
                   </div>
                   
-                  <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                    {project.address}
-                  </p>
-                  
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Client:</span>
-                      <span className="font-medium">{project.clientOrg}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Created:</span>
-                      <span className="text-gray-500">
-                        {formatDistanceToNow(new Date(project.createdAt), { addSuffix: true })}
-                      </span>
-                    </div>
+                  <div className="flex items-center justify-between">
+                    <Badge
+                      variant={
+                        project.status === "active"
+                          ? "default"
+                          : project.status === "completed"
+                          ? "secondary"
+                          : "outline"
+                      }
+                    >
+                      {project.status}
+                    </Badge>
+                    <span className="text-xs text-gray-500">
+                      {formatDistanceToNow(new Date(project.createdAt), {
+                        addSuffix: true,
+                      })}
+                    </span>
                   </div>
                 </CardContent>
               </Card>

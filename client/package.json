@@ -5,26 +5,24 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
-    "plasmic:init": "plasmic init",
-    "plasmic:sync": "plasmic sync --projects psNPtVcnYUB9aDHgz6LmTF",
-    "plasmic:sync:pin": "plasmic sync --projects psNPtVcnYUB9aDHgz6LmTF --yes"
+    "preview": "vite preview"
   },
   "dependencies": {
-    "@plasmicapp/loader-react": "^1.0.395",
-    "@plasmicapp/react-web": "^0.2.397",
+    "@hookform/resolvers": "^3.10.0",
     "@tanstack/react-query": "^5.60.5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.453.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-hook-form": "^7.55.0",
+    "react-router-dom": "^6.30.1",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
-    "wouter": "^3.3.5"
+    "wouter": "^3.3.5",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@plasmicapp/cli": "latest",
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.2",

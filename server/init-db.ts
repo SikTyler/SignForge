@@ -1,5 +1,5 @@
 import Database from 'better-sqlite3';
-import { seedDatabase } from "./db/seed";
+import { seedDatabase } from "./db/seed.js";
 
 async function initDatabase() {
   console.log("Initializing database...");
@@ -29,16 +29,143 @@ async function initDatabase() {
       created_at INTEGER
     );
     
-    CREATE TABLE IF NOT EXISTS sign_types (
+    CREATE TABLE IF NOT EXISTS drawing_sets (
       id TEXT PRIMARY KEY,
       project_id TEXT NOT NULL,
-      name TEXT NOT NULL,
-      category TEXT NOT NULL,
-      spec_page_id TEXT,
+      version TEXT NOT NULL DEFAULT '1.0',
+      uploaded_by TEXT NOT NULL,
+      notes TEXT,
       created_at INTEGER,
       FOREIGN KEY (project_id) REFERENCES projects(id)
     );
     
+    CREATE TABLE IF NOT EXISTS drawing_files (
+      id TEXT PRIMARY KEY,
+      drawing_set_id TEXT NOT NULL,
+      storage_url TEXT NOT NULL,
+      original_filename TEXT NOT NULL,
+      display_name TEXT NOT NULL,
+      scale TEXT,
+      short_code TEXT,
+      page_count INTEGER,
+      created_at INTEGER,
+      FOREIGN KEY (drawing_set_id) REFERENCES drawing_sets(id)
+    );
+    
+    CREATE TABLE IF NOT EXISTS sign_types (
+      id TEXT PRIMARY KEY,
+      project_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'active',
+      created_at INTEGER,
+      FOREIGN KEY (project_id) REFERENCES projects(id)
+    );
+    
+    CREATE TABLE IF NOT EXISTS sign_items (
+      id TEXT PRIMARY KEY,
+      sign_type_id TEXT NOT NULL,
+      label TEXT NOT NULL,
+      verbiage TEXT,
+      quantity INTEGER NOT NULL DEFAULT 1,
+      unit_price REAL NOT NULL,
+      status TEXT NOT NULL DEFAULT 'draft',
+      created_at INTEGER,
+      FOREIGN KEY (sign_type_id) REFERENCES sign_types(id)
+    );
+    
+    CREATE TABLE IF NOT EXISTS takeoffs (
+      id TEXT PRIMARY KEY,
+      project_id TEXT NOT NULL,
+      method TEXT NOT NULL DEFAULT 'human',
+      created_by TEXT NOT NULL,
+      created_at INTEGER,
+      FOREIGN KEY (project_id) REFERENCES projects(id)
+    );
+    
+    CREATE TABLE IF NOT EXISTS takeoff_lines (
+      id TEXT PRIMARY KEY,
+      takeoff_id TEXT NOT NULL,
+      sign_type_id TEXT,
+      sign_item_id TEXT,
+      description TEXT NOT NULL,
+      qty INTEGER NOT NULL DEFAULT 1,
+      unit TEXT NOT NULL DEFAULT 'ea',
+      unit_price REAL NOT NULL,
+      notes TEXT,
+      created_at INTEGER,
+      FOREIGN KEY (takeoff_id) REFERENCES takeoffs(id),
+      FOREIGN KEY (sign_type_id) REFERENCES sign_types(id),
+      FOREIGN KEY (sign_item_id) REFERENCES sign_items(id)
+    );
+    
+    CREATE TABLE IF NOT EXISTS rom_estimates (
+      id TEXT PRIMARY KEY,
+      project_id TEXT NOT NULL,
+      takeoff_id TEXT NOT NULL,
+      subtotal REAL NOT NULL,
+      tax REAL,
+      total REAL NOT NULL,
+      category_breakdown_json TEXT,
+      examples_ref TEXT,
+      created_at INTEGER,
+      FOREIGN KEY (project_id) REFERENCES projects(id),
+      FOREIGN KEY (takeoff_id) REFERENCES takeoffs(id)
+    );
+    
+    CREATE TABLE IF NOT EXISTS code_summaries (
+      id TEXT PRIMARY KEY,
+      project_id TEXT NOT NULL,
+      jurisdiction TEXT NOT NULL,
+      required_json TEXT,
+      allowances_json TEXT,
+      restrictions_json TEXT,
+      reviewer TEXT,
+      created_at INTEGER,
+      FOREIGN KEY (project_id) REFERENCES projects(id)
+    );
+    
+    CREATE TABLE IF NOT EXISTS vendors (
+      id TEXT PRIMARY KEY,
+      org_name TEXT NOT NULL,
+      capabilities TEXT NOT NULL,
+      regions_json TEXT,
+      contact_email TEXT NOT NULL,
+      created_at INTEGER
+    );
+    
+    CREATE TABLE IF NOT EXISTS rfqs (
+      id TEXT PRIMARY KEY,
+      project_id TEXT NOT NULL,
+      vendor_id TEXT NOT NULL,
+      package_ref TEXT,
+      status TEXT NOT NULL DEFAULT 'draft',
+      sent_at INTEGER,
+      response_meta_json TEXT,
+      created_at INTEGER,
+      FOREIGN KEY (project_id) REFERENCES projects(id),
+      FOREIGN KEY (vendor_id) REFERENCES vendors(id)
+    );
+    
+    CREATE TABLE IF NOT EXISTS milestones (
+      id TEXT PRIMARY KEY,
+      project_id TEXT NOT NULL,
+      kind TEXT NOT NULL,
+      date INTEGER NOT NULL,
+      notes TEXT,
+      created_at INTEGER,
+      FOREIGN KEY (project_id) REFERENCES projects(id)
+    );
+    
+    CREATE TABLE IF NOT EXISTS example_packages (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      price_min REAL NOT NULL,
+      price_max REAL NOT NULL,
+      template_json TEXT,
+      created_at INTEGER
+    );
+    
+    -- Legacy tables (keeping for compatibility)
     CREATE TABLE IF NOT EXISTS spec_pages (
       id TEXT PRIMARY KEY,
       sign_type_id TEXT NOT NULL,
@@ -107,121 +234,6 @@ async function initDatabase() {
       pinned_y REAL,
       created_at INTEGER,
       FOREIGN KEY (user_id) REFERENCES users(id)
-    );
-    
-    CREATE TABLE IF NOT EXISTS vendors (
-      id TEXT PRIMARY KEY,
-      org TEXT NOT NULL,
-      contact_email TEXT NOT NULL,
-      rating REAL NOT NULL,
-      review_count INTEGER NOT NULL,
-      regions_json TEXT,
-      capabilities_json TEXT,
-      created_at INTEGER
-    );
-    
-    CREATE TABLE IF NOT EXISTS master_sign_types (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      category TEXT NOT NULL,
-      default_specs_json TEXT,
-      created_at INTEGER
-    );
-    
-    CREATE TABLE IF NOT EXISTS drawing_sets (
-      id TEXT PRIMARY KEY,
-      project_id TEXT NOT NULL,
-      file_path TEXT NOT NULL,
-      filename TEXT NOT NULL,
-      total_pages INTEGER NOT NULL,
-      included_pages_json TEXT,
-      notes TEXT,
-      uploaded_at INTEGER,
-      FOREIGN KEY (project_id) REFERENCES projects(id)
-    );
-    
-    CREATE TABLE IF NOT EXISTS takeoff_pages (
-      id TEXT PRIMARY KEY,
-      drawing_set_id TEXT NOT NULL,
-      page_number INTEGER NOT NULL,
-      is_included INTEGER NOT NULL DEFAULT 0,
-      FOREIGN KEY (drawing_set_id) REFERENCES drawing_sets(id)
-    );
-    
-    CREATE TABLE IF NOT EXISTS rom_pricing (
-      id TEXT PRIMARY KEY,
-      project_id TEXT NOT NULL,
-      total REAL NOT NULL,
-      breakdown_json TEXT,
-      updated_at INTEGER,
-      FOREIGN KEY (project_id) REFERENCES projects(id)
-    );
-    
-    CREATE TABLE IF NOT EXISTS code_summaries (
-      id TEXT PRIMARY KEY,
-      project_id TEXT NOT NULL,
-      summary_json TEXT,
-      updated_at INTEGER,
-      FOREIGN KEY (project_id) REFERENCES projects(id)
-    );
-    
-    CREATE TABLE IF NOT EXISTS example_packages (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      price_min REAL NOT NULL,
-      price_max REAL NOT NULL,
-      template_json TEXT,
-      created_at INTEGER
-    );
-    
-    CREATE TABLE IF NOT EXISTS rfqs (
-      id TEXT PRIMARY KEY,
-      project_id TEXT NOT NULL,
-      scope_json TEXT,
-      due_date INTEGER,
-      status TEXT NOT NULL DEFAULT 'draft',
-      created_at INTEGER,
-      FOREIGN KEY (project_id) REFERENCES projects(id)
-    );
-    
-    CREATE TABLE IF NOT EXISTS bids (
-      id TEXT PRIMARY KEY,
-      rfq_id TEXT NOT NULL,
-      vendor_id TEXT NOT NULL,
-      price REAL NOT NULL,
-      lead_time_weeks INTEGER NOT NULL,
-      notes TEXT,
-      created_at INTEGER,
-      FOREIGN KEY (rfq_id) REFERENCES rfqs(id),
-      FOREIGN KEY (vendor_id) REFERENCES vendors(id)
-    );
-    
-    CREATE TABLE IF NOT EXISTS project_sign_types (
-      id TEXT PRIMARY KEY,
-      project_id TEXT NOT NULL,
-      master_sign_type_id TEXT,
-      name TEXT NOT NULL,
-      category TEXT NOT NULL,
-      custom_specs_json TEXT,
-      created_at INTEGER,
-      FOREIGN KEY (project_id) REFERENCES projects(id),
-      FOREIGN KEY (master_sign_type_id) REFERENCES master_sign_types(id)
-    );
-    
-    CREATE TABLE IF NOT EXISTS takeoff_markers (
-      id TEXT PRIMARY KEY,
-      drawing_set_id TEXT NOT NULL,
-      page_number INTEGER NOT NULL,
-      project_sign_type_id TEXT NOT NULL,
-      x REAL NOT NULL,
-      y REAL NOT NULL,
-      width REAL NOT NULL,
-      height REAL NOT NULL,
-      qty INTEGER NOT NULL DEFAULT 1,
-      notes TEXT,
-      created_at INTEGER,
-      FOREIGN KEY (drawing_set_id) REFERENCES drawing_sets(id),
-      FOREIGN KEY (project_sign_type_id) REFERENCES project_sign_types(id)
     );
   `);
   

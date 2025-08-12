@@ -1,69 +1,86 @@
-# SignForge
+# SignForge - Multifamily Signage Platform
 
-A local-only development setup for SignForge - a sign management and takeoff application.
+A clean, stable platform for managing multifamily signage projects.
 
-## Prerequisites
+## 🚀 Quick Start
 
-- Node.js 18+ 
-- npm
-
-## Quick Start
-
-1. **Install dependencies** (first time only):
+1. **Install dependencies:**
    ```bash
-   npm run setup
+   npm install
    ```
 
-2. **Start development servers**:
+2. **Start development servers:**
    ```bash
    npm run dev
    ```
 
-3. **Open the application**:
-   - API: http://localhost:3001
-   - Frontend: http://localhost:5173 (or next available port)
-   - Test API health: http://localhost:3001/api/health
+3. **Access the application:**
+   - Frontend: http://localhost:5173
+   - Backend API: http://localhost:3001
+   - Health Check: http://localhost:3001/health
 
-## Development
+## 📁 Project Structure
 
-- **API Server**: Express.js with SQLite database
-- **Frontend**: React + Vite + TypeScript + Tailwind CSS
-- **Database**: SQLite (stored in `server/db/signforge.db`)
-- **Uploads**: Stored in `server/uploads/`
+```
+├── client/                 # React + Vite frontend
+│   ├── src/
+│   │   ├── components/     # UI components
+│   │   ├── pages/         # Route components
+│   │   └── App.tsx        # Main app with routing
+├── server/                # Express.js backend
+│   └── src/
+│       └── index.ts       # Server entry point
+├── shared/                # Shared types and schemas
+└── env.example           # Environment variables template
+```
 
-## Available Scripts
+## 🛣️ Routes
 
-- `npm run dev` - Start both client and server
-- `npm run dev:server` - Start server only
-- `npm run dev:client` - Start client only
-- `npm run setup` - Install dependencies for both client and server
-- `npm run doctor` - Check development environment integrity
-- `npm run build` - Build for production
+### Frontend Routes
+- `/` - Dashboard
+- `/projects` - Project list
+- `/projects/:id` - Project overview with tabs
+- `/projects/:id/drawings` - PDF upload & metadata
+- `/projects/:id/rom` - ROM estimates
+- `/projects/:id/code` - Code summary
+- `/projects/:id/rfqs` - Vendor RFQs
+
+### Backend Routes
+- `GET /health` - Health check endpoint
+
+## 🛠️ Available Scripts
+
+- `npm run dev` - Start both frontend and backend in development
+- `npm run server:dev` - Start backend only with nodemon
+- `npm run web:dev` - Start frontend only with Vite
+- `npm run build` - Build both frontend and backend
 - `npm run start` - Start production server
 
-## Project Structure
+## 🎯 Features
 
-```
-SignForge/
-├── client/          # React frontend
-├── server/          # Express API
-├── server/uploads/  # File uploads
-├── server/db/       # SQLite database
-└── scripts/         # Development utilities
+- **Clean Architecture**: Stripped of Plasmic dependencies
+- **Modern Stack**: React 18 + Vite + Express + TypeScript
+- **Responsive UI**: Tailwind CSS + shadcn/ui components
+- **Type Safety**: Full TypeScript support
+- **Development Ready**: Hot reload for both frontend and backend
+
+## 🔧 Environment Variables
+
+Copy `env.example` to `.env` and configure:
+
+```env
+PORT=3001
+NODE_ENV=development
+VITE_API_URL=http://localhost:3001
 ```
 
-## Troubleshooting
+## 📝 Next Steps
 
-Run the doctor script to check your setup:
-```bash
-npm run doctor
-```
-
-If you encounter port conflicts, kill existing processes:
-```powershell
-# Windows PowerShell
-netstat -ano | findstr :5173
-taskkill /PID <PID> /F
-```
+This is a clean foundation ready for:
+- Database integration
+- Authentication
+- File upload functionality
+- API endpoints for each feature
+- Enhanced UI components
 
 

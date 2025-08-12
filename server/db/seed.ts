@@ -31,351 +31,286 @@ export async function seedDatabase() {
     org: "ProSign Industries"
   });
 
-  // Create demo project
-  const project = await storage.createProject({
+  // Create demo projects
+  const project1 = await storage.createProject({
     name: "Westfield Commons Phase 2",
     address: "1234 Main Street, Seattle, WA 98101",
     clientOrg: "Westfield Development",
     status: "active"
   });
 
-  // Create sign types
-  const adaSignType = await storage.createSignType({
-    projectId: project.id,
-    name: "ADA Room ID", 
-    category: "Interior"
+  const project2 = await storage.createProject({
+    name: "Riverside Apartments",
+    address: "5678 River Road, Portland, OR 97201",
+    clientOrg: "Riverside Properties",
+    status: "active"
   });
 
-  const parkingSignType = await storage.createSignType({
-    projectId: project.id,
-    name: "Parking Signs",
-    category: "Exterior"
+  const project3 = await storage.createProject({
+    name: "Downtown Office Tower",
+    address: "999 Business Blvd, San Francisco, CA 94102",
+    clientOrg: "Urban Development Corp",
+    status: "planning"
   });
 
-  const monumentSignType = await storage.createSignType({
-    projectId: project.id,
-    name: "Monument Sign",
-    category: "Monument"
-  });
-
-  // Create spec pages
-  const adaSpec = await storage.createSpecPage({
-    signTypeId: adaSignType.id,
-    title: "ADA Room ID Specifications",
-    version: "v2.1",
-    jsonSpecs: JSON.stringify({
-      material: "Acrylic with Braille",
-      mounting: "Wall mounted with standoffs",
-      fontSize: "18pt minimum",
-      contrast: "70% minimum"
-    })
-  });
-
-  const parkingSpec = await storage.createSpecPage({
-    signTypeId: parkingSignType.id,
-    title: "Parking Sign Specifications", 
-    version: "v1.0",
-    jsonSpecs: JSON.stringify({
-      material: "Aluminum composite",
-      mounting: "Post mounted",
-      reflectivity: "Engineer grade"
-    })
-  });
-
-  const monumentSpec = await storage.createSpecPage({
-    signTypeId: monumentSignType.id,
-    title: "Monument Sign Specifications",
-    version: "v3.2", 
-    jsonSpecs: JSON.stringify({
-      material: "Natural stone with LED lighting",
-      height: "8 feet maximum",
-      foundation: "Concrete footer required"
-    })
-  });
-
-  // Update sign types with spec page IDs
-  adaSignType.specPageId = adaSpec.id;
-  parkingSignType.specPageId = parkingSpec.id;
-  monumentSignType.specPageId = monumentSpec.id;
-
-  // Create demo signs
-  const signs = [
-    // ADA signs
-    { locationRef: "Building A - Lobby Entrance", signTypeId: adaSignType.id, width: 12, height: 8, unitPrice: 485, qty: 2 },
-    { locationRef: "Building A - Conference Room 101", signTypeId: adaSignType.id, width: 10, height: 6, unitPrice: 385, qty: 1 },
-    { locationRef: "Building A - Restroom East", signTypeId: adaSignType.id, width: 8, height: 6, unitPrice: 325, qty: 2 },
-    { locationRef: "Building B - Main Entrance", signTypeId: adaSignType.id, width: 12, height: 8, unitPrice: 485, qty: 1 },
-    
-    // Parking signs
-    { locationRef: "Parking Lot North - Visitor", signTypeId: parkingSignType.id, width: 18, height: 24, unitPrice: 145, qty: 4 },
-    { locationRef: "Parking Lot South - Resident", signTypeId: parkingSignType.id, width: 18, height: 24, unitPrice: 145, qty: 8 },
-    { locationRef: "Parking Garage - Level 1", signTypeId: parkingSignType.id, width: 24, height: 18, unitPrice: 185, qty: 3 },
-    
-    // Monument signs  
-    { locationRef: "Main Entrance", signTypeId: monumentSignType.id, width: 96, height: 72, unitPrice: 15500, qty: 1 },
-    { locationRef: "Secondary Entrance", signTypeId: monumentSignType.id, width: 72, height: 60, unitPrice: 12800, qty: 1 },
-    { locationRef: "Leasing Office", signTypeId: monumentSignType.id, width: 60, height: 48, unitPrice: 9800, qty: 1 }
+  // Create sign types for each project
+  const signTypes1 = [
+    { name: "ADA Room ID", projectId: project1.id },
+    { name: "Life Safety", projectId: project1.id },
+    { name: "Wayfinding", projectId: project1.id },
+    { name: "Exterior ID/Branding", projectId: project1.id }
   ];
 
-  for (const signData of signs) {
-    await storage.createSign({
-      projectId: project.id,
-      signTypeId: signData.signTypeId,
-      locationRef: signData.locationRef,
-      width: signData.width,
-      height: signData.height,
-      unitPrice: signData.unitPrice,
-      qty: signData.qty,
-      status: "in_review"
-    });
+  const signTypes2 = [
+    { name: "ADA Room ID", projectId: project2.id },
+    { name: "Parking Signs", projectId: project2.id },
+    { name: "Monument Sign", projectId: project2.id }
+  ];
+
+  const signTypes3 = [
+    { name: "Building Directory", projectId: project3.id },
+    { name: "Floor ID", projectId: project3.id },
+    { name: "Exterior ID/Branding", projectId: project3.id }
+  ];
+
+  const allSignTypes = [...signTypes1, ...signTypes2, ...signTypes3];
+  const createdSignTypes = [];
+
+  for (const signType of allSignTypes) {
+    const created = await storage.createSignType(signType);
+    createdSignTypes.push(created);
   }
 
-  // Create tile artworks with some marked as stale
-  const projectSigns = await storage.getSigns(project.id);
-  for (const sign of projectSigns.slice(0, 6)) {
-    await storage.createTileArtwork({
-      signId: sign.id,
-      filePath: `/uploads/artwork-${sign.id}.png`,
-      version: "v1.0",
-      paramsJson: JSON.stringify({
-        stale: sign.signTypeName === "ADA Room ID" // Mark ADA signs as stale
-      })
-    });
+  // Create sign items for each sign type
+  const signItems = [
+    // Project 1 - Westfield Commons
+    { signTypeId: createdSignTypes[0].id, label: "Lobby Entrance", verbiage: "LOBBY", quantity: 2, unitPrice: 485 },
+    { signTypeId: createdSignTypes[0].id, label: "Conference Room 101", verbiage: "CONFERENCE ROOM 101", quantity: 1, unitPrice: 385 },
+    { signTypeId: createdSignTypes[0].id, label: "Restroom East", verbiage: "RESTROOM", quantity: 2, unitPrice: 325 },
+    { signTypeId: createdSignTypes[1].id, label: "Exit Sign - North", verbiage: "EXIT", quantity: 4, unitPrice: 125 },
+    { signTypeId: createdSignTypes[1].id, label: "Emergency Exit", verbiage: "EMERGENCY EXIT", quantity: 2, unitPrice: 145 },
+    { signTypeId: createdSignTypes[2].id, label: "Elevator Lobby", verbiage: "ELEVATOR", quantity: 3, unitPrice: 225 },
+    { signTypeId: createdSignTypes[2].id, label: "Stairwell", verbiage: "STAIRWELL", quantity: 2, unitPrice: 185 },
+    { signTypeId: createdSignTypes[3].id, label: "Main Entrance", verbiage: "WESTFIELD COMMONS", quantity: 1, unitPrice: 15500 },
+    { signTypeId: createdSignTypes[3].id, label: "Secondary Entrance", verbiage: "WESTFIELD COMMONS", quantity: 1, unitPrice: 12800 },
+
+    // Project 2 - Riverside Apartments
+    { signTypeId: createdSignTypes[4].id, label: "Building A - Lobby", verbiage: "LOBBY", quantity: 1, unitPrice: 485 },
+    { signTypeId: createdSignTypes[4].id, label: "Building B - Lobby", verbiage: "LOBBY", quantity: 1, unitPrice: 485 },
+    { signTypeId: createdSignTypes[5].id, label: "Visitor Parking", verbiage: "VISITOR PARKING", quantity: 4, unitPrice: 145 },
+    { signTypeId: createdSignTypes[5].id, label: "Resident Parking", verbiage: "RESIDENT PARKING", quantity: 8, unitPrice: 145 },
+    { signTypeId: createdSignTypes[6].id, label: "Main Entrance", verbiage: "RIVERSIDE APARTMENTS", quantity: 1, unitPrice: 9800 },
+
+    // Project 3 - Downtown Office Tower
+    { signTypeId: createdSignTypes[7].id, label: "Main Lobby Directory", verbiage: "BUILDING DIRECTORY", quantity: 1, unitPrice: 2500 },
+    { signTypeId: createdSignTypes[8].id, label: "Floor 1", verbiage: "FLOOR 1", quantity: 2, unitPrice: 185 },
+    { signTypeId: createdSignTypes[8].id, label: "Floor 2", verbiage: "FLOOR 2", quantity: 2, unitPrice: 185 },
+    { signTypeId: createdSignTypes[9].id, label: "Building ID", verbiage: "DOWNTOWN OFFICE TOWER", quantity: 1, unitPrice: 12500 }
+  ];
+
+  for (const signItem of signItems) {
+    await storage.createSignItem(signItem);
   }
 
-  // Create code summary
-  (storage as any).codeSummaries.set("code1", {
-    id: "code1",
-    projectId: project.id,
+  // Create takeoffs and ROM estimates for Project 1
+  const takeoff1 = await storage.createTakeoff({
+    projectId: project1.id,
+    method: 'human',
+    createdBy: pmUser.id
+  });
+
+  const takeoffLines1 = [
+    { takeoffId: takeoff1.id, description: "ADA Room ID - Lobby Entrance", qty: 2, unit: "ea", unitPrice: 485, notes: "Braille required" },
+    { takeoffId: takeoff1.id, description: "ADA Room ID - Conference Room 101", qty: 1, unit: "ea", unitPrice: 385, notes: "Braille required" },
+    { takeoffId: takeoff1.id, description: "ADA Room ID - Restroom East", qty: 2, unit: "ea", unitPrice: 325, notes: "Braille required" },
+    { takeoffId: takeoff1.id, description: "Life Safety - Exit Signs", qty: 4, unit: "ea", unitPrice: 125, notes: "LED illuminated" },
+    { takeoffId: takeoff1.id, description: "Life Safety - Emergency Exit", qty: 2, unit: "ea", unitPrice: 145, notes: "LED illuminated" },
+    { takeoffId: takeoff1.id, description: "Wayfinding - Elevator Lobby", qty: 3, unit: "ea", unitPrice: 225, notes: "Directional arrows" },
+    { takeoffId: takeoff1.id, description: "Wayfinding - Stairwell", qty: 2, unit: "ea", unitPrice: 185, notes: "Directional arrows" },
+    { takeoffId: takeoff1.id, description: "Exterior ID - Main Entrance Monument", qty: 1, unit: "ea", unitPrice: 15500, notes: "Illuminated, stone base" },
+    { takeoffId: takeoff1.id, description: "Exterior ID - Secondary Entrance", qty: 1, unit: "ea", unitPrice: 12800, notes: "Illuminated, metal frame" }
+  ];
+
+  for (const line of takeoffLines1) {
+    await storage.createTakeoffLine(line);
+  }
+
+  // Create ROM estimate for Project 1
+  const subtotal1 = takeoffLines1.reduce((sum, line) => sum + (line.qty * line.unitPrice), 0);
+  const tax1 = subtotal1 * 0.085;
+  const total1 = subtotal1 + tax1;
+
+  const categoryBreakdown1 = {
+    'ADA/Room IDs': 1680, // 2*485 + 1*385 + 2*325
+    'Life Safety': 630,   // 4*125 + 2*145
+    'Wayfinding': 845,    // 3*225 + 2*185
+    'Exterior ID/Branding': 28300 // 15500 + 12800
+  };
+
+  await storage.createRomEstimate({
+    projectId: project1.id,
+    takeoffId: takeoff1.id,
+    subtotal: subtotal1,
+    tax: tax1,
+    total: total1,
+    categoryBreakdownJson: JSON.stringify(categoryBreakdown1),
+    examplesRef: JSON.stringify(['pkg1', 'pkg2'])
+  });
+
+  // Create code summaries
+  await storage.createCodeSummary({
+    projectId: project1.id,
     jurisdiction: "Seattle, WA",
-    requiredJson: [
-      "ADA Room Identification",
-      "Exit & Emergency Signage", 
-      "Parking Designations",
-      "Monument Signage"
+    required: [
+      "ADA Room Identification - All rooms must have tactile and visual identification",
+      "Exit & Emergency Signage - Illuminated exit signs required in all corridors",
+      "Life Safety - Emergency exit signs with directional arrows",
+      "Building Identification - Exterior monument signs for main entrances"
     ],
-    restrictionsJson: [
-      "No LED displays after 10pm",
-      "Max height: 25 feet",
-      "Setback: 15 feet from property line"
+    allowances: [
+      "Illuminated signage permitted with automatic dimming after 10pm",
+      "Multiple tenant panels on directory signs",
+      "Digital displays for wayfinding (non-emergency use only)",
+      "Custom branding elements on exterior signs"
     ],
-    allowancesJson: [
-      "Illuminated signage permitted",
-      "Multiple tenant panels",
-      "Digital directory displays"
+    restrictions: [
+      "Maximum sign height: 25 feet from ground level",
+      "Setback requirement: 15 feet from property line",
+      "No LED displays after 10pm in residential areas",
+      "Monument signs must be architecturally integrated"
     ],
-    updatedAt: new Date()
+    reviewer: "City of Seattle Planning Department"
   });
 
-  // Create example packages
-  const packages = [
-    { name: "Essential Package", priceMin: 180000, priceMax: 220000, templateJson: { description: "Basic ADA compliance, parking signs, simple monument" }},
-    { name: "Premium Package", priceMin: 280000, priceMax: 350000, templateJson: { description: "Full wayfinding, illuminated monument, branded elements" }},
-    { name: "Luxury Package", priceMin: 420000, priceMax: 500000, templateJson: { description: "Digital displays, custom metalwork, architectural integration" }}
-  ];
-
-  for (const pkg of packages) {
-    (storage as any).examplePackages.set(pkg.name, {
-      id: pkg.name,
-      ...pkg
-    });
-  }
+  await storage.createCodeSummary({
+    projectId: project2.id,
+    jurisdiction: "Portland, OR",
+    required: [
+      "ADA Room Identification - Tactile and visual room numbers",
+      "Parking Designations - Clear visitor vs resident parking",
+      "Building Identification - Exterior signage for multi-building complexes"
+    ],
+    allowances: [
+      "Reflective materials for parking signs",
+      "Solar-powered illumination for exterior signs",
+      "Multi-lingual signage permitted"
+    ],
+    restrictions: [
+      "Maximum sign height: 20 feet",
+      "No illuminated signs in residential zones after 11pm",
+      "Signs must be setback 10 feet from property line"
+    ],
+    reviewer: "Portland Bureau of Planning and Sustainability"
+  });
 
   // Create vendors
   const vendors = [
-    { 
-      org: "ProSign Industries", 
-      contactEmail: "info@prosign.com",
-      rating: 4.8,
-      reviewCount: 24,
-      regionsJson: ["Pacific Northwest"],
-      capabilitiesJson: ["Monument", "ADA", "Parking"]
+    {
+      orgName: "ProSign Industries",
+      capabilities: "both",
+      regionsJson: JSON.stringify(["Pacific Northwest", "California"]),
+      contactEmail: "info@prosign.com"
     },
     {
-      org: "Elite Signage Co.",
-      contactEmail: "sales@elitesigns.com", 
-      rating: 4.6,
-      reviewCount: 18,
-      regionsJson: ["West Coast"],
-      capabilitiesJson: ["Digital", "Wayfinding", "Custom"]
+      orgName: "Elite Signage Co.",
+      capabilities: "build",
+      regionsJson: JSON.stringify(["West Coast", "Mountain States"]),
+      contactEmail: "sales@elitesigns.com"
     },
     {
-      org: "Northwest Signs",
-      contactEmail: "contact@nwsigns.com",
-      rating: 4.9, 
-      reviewCount: 12,
-      regionsJson: ["Pacific Northwest"],
-      capabilitiesJson: ["Traditional", "Monument"]
+      orgName: "Northwest Signs",
+      capabilities: "install",
+      regionsJson: JSON.stringify(["Pacific Northwest"]),
+      contactEmail: "contact@nwsigns.com"
+    },
+    {
+      orgName: "Pacific Sign Solutions",
+      capabilities: "both",
+      regionsJson: JSON.stringify(["California", "Nevada"]),
+      contactEmail: "info@pacificsigns.com"
+    },
+    {
+      orgName: "Metro Sign & Display",
+      capabilities: "build",
+      regionsJson: JSON.stringify(["West Coast"]),
+      contactEmail: "sales@metrosign.com"
+    },
+    {
+      orgName: "Coastal Installation Services",
+      capabilities: "install",
+      regionsJson: JSON.stringify(["California", "Oregon", "Washington"]),
+      contactEmail: "install@coastal.com"
     }
   ];
 
   for (const vendor of vendors) {
-    (storage as any).vendors.set(vendor.org, {
-      id: vendor.org,
-      ...vendor
-    });
+    await storage.createVendor(vendor);
   }
 
-  // Create RFQ and bids
-  const rfq = await storage.createRfq({
-    projectId: project.id,
-    scopeJson: JSON.stringify({
-      title: "Exterior Signage Package - Westfield Commons",
-      description: "Monument sign, parking signs, and wayfinding elements"
-    }),
-    dueDate: new Date("2024-03-15"),
-    status: "open"
-  });
-
-  // Create bids from vendors
-  await storage.createBid({
-    rfqId: rfq.id,
-    vendorId: "ProSign Industries",
-    price: 245000,
-    leadTimeWeeks: 8,
-    notes: "Includes installation and 2-year warranty"
-  });
-
-  await storage.createBid({
-    rfqId: rfq.id, 
-    vendorId: "Elite Signage Co.",
-    price: 268500,
-    leadTimeWeeks: 6,
-    notes: "Premium materials with digital integration"
-  });
-
-  await storage.createBid({
-    rfqId: rfq.id,
-    vendorId: "Northwest Signs", 
-    price: 285750,
-    leadTimeWeeks: 10,
-    notes: "Traditional craftsmanship with natural stone"
-  });
-
-  // Create proof with proof items
-  const proof = await storage.createProof(project.id);
-  const proofSigns = projectSigns.slice(0, 6);
-  
-  for (let i = 0; i < proofSigns.length; i++) {
-    (storage as any).proofItems.set(`item${i}`, {
-      id: `item${i}`,
-      proofId: proof.id,
-      signId: proofSigns[i].id,
-      pageNumber: 1,
-      x: 0.1 + (i % 3) * 0.3,
-      y: 0.2 + Math.floor(i / 3) * 0.4,
-      w: 0.2,
-      h: 0.15
-    });
-  }
-
-  // Create sample comments
-  await storage.createComment({
-    entityType: "sign",
-    entityId: projectSigns[0].id,
-    userId: devUser.id,
-    body: "The font size needs to be larger to meet ADA compliance. Please update to 18pt minimum.",
-    pinnedX: 0.3,
-    pinnedY: 0.4
-  });
-
-  await storage.createComment({
-    entityType: "sign", 
-    entityId: projectSigns[0].id,
-    userId: vendorUser.id,
-    body: "Approved the color scheme. Looks good!"
-  });
-
-  await storage.createComment({
-    entityType: "proof",
-    entityId: proof.id,
-    userId: devUser.id, 
-    body: "This sign needs to be moved 2 feet to the left for better visibility.",
-    pinnedX: 0.48,
-    pinnedY: 0.52
-  });
-
-  await storage.createComment({
-    entityType: "proof",
-    entityId: proof.id,
-    userId: vendorUser.id,
-    body: "Parking sign looks perfect here. Approved!",
-    pinnedX: 0.75,
-    pinnedY: 0.32
-  });
-
-<<<<<<< HEAD
-<<<<<<< HEAD
-  // Create master sign types for takeoffs
-  const masterSignTypes = [
+  // Create example packages
+  const examplePackages = [
     {
-      name: "ADA Room ID",
-      category: "Interior",
-      defaultSpecsJson: JSON.stringify({
-        material: "Acrylic",
-        mounting: "Wall-mounted",
-        braille: true,
-        contrast: "Light on Dark"
+      name: "Essential Package",
+      priceMin: 180000,
+      priceMax: 220000,
+      templateJson: JSON.stringify({
+        description: "Basic ADA compliance, parking signs, simple monument",
+        includes: ["ADA Room IDs", "Basic Parking Signs", "Simple Monument Sign"],
+        typicalProjects: "Small to medium apartment complexes"
       })
     },
     {
-      name: "Exit Signs",
-      category: "Safety",
-      defaultSpecsJson: JSON.stringify({
-        material: "LED",
-        mounting: "Ceiling/Wall",
-        illuminated: true,
-        emergency: true
+      name: "Premium Package",
+      priceMin: 280000,
+      priceMax: 350000,
+      templateJson: JSON.stringify({
+        description: "Full wayfinding, illuminated monument, branded elements",
+        includes: ["Complete Wayfinding System", "Illuminated Monument", "Branded Elements", "Digital Directory"],
+        typicalProjects: "Large residential developments, office buildings"
       })
     },
     {
-      name: "Directional Wayfinding",
-      category: "Wayfinding", 
-      defaultSpecsJson: JSON.stringify({
-        material: "Aluminum",
-        mounting: "Post-mounted",
-        finish: "Powder-coated"
-      })
-    },
-    {
-      name: "Monument Sign",
-      category: "Exterior",
-      defaultSpecsJson: JSON.stringify({
-        material: "Stone/Metal",
-        mounting: "Ground-mounted",
-        illuminated: true,
-        foundation: "Required"
-      })
-    },
-    {
-      name: "Parking Signs", 
-      category: "Traffic",
-      defaultSpecsJson: JSON.stringify({
-        material: "Aluminum",
-        mounting: "Post-mounted",
-        reflective: true
-      })
-    },
-    {
-      name: "Building Directory",
-      category: "Information",
-      defaultSpecsJson: JSON.stringify({
-        material: "Metal/Glass",
-        mounting: "Wall-mounted",
-        changeable: true
+      name: "Luxury Package",
+      priceMin: 420000,
+      priceMax: 500000,
+      templateJson: JSON.stringify({
+        description: "Digital displays, custom metalwork, architectural integration",
+        includes: ["Digital Displays", "Custom Metalwork", "Architectural Integration", "Premium Materials"],
+        typicalProjects: "High-end developments, corporate headquarters"
       })
     }
   ];
 
-  for (const masterType of masterSignTypes) {
-    await storage.createMasterSignType(masterType);
+  for (const pkg of examplePackages) {
+    await storage.createExamplePackage(pkg);
   }
 
-  console.log("Database seeded successfully with master sign types!");
-=======
-  console.log("Database seeded successfully!");
->>>>>>> parent of 27122f1 (Add takeoff functionality for project sign management)
-=======
-  console.log("Database seeded successfully!");
->>>>>>> parent of 27122f1 (Add takeoff functionality for project sign management)
+  // Create RFQs for Project 1
+  const allVendors = await storage.getVendors();
+  const selectedVendors = allVendors.slice(0, 3); // Select first 3 vendors
+
+  for (const vendor of selectedVendors) {
+    await storage.createRfq({
+      projectId: project1.id,
+      vendorId: vendor.id,
+      packageRef: "Premium Package",
+      status: "sent"
+    });
+  }
+
+  // Create milestones for Project 1
+  const milestones = [
+    { projectId: project1.id, kind: "fab_start", date: new Date("2024-03-15"), notes: "Begin fabrication of ADA signs" },
+    { projectId: project1.id, kind: "fab_done", date: new Date("2024-04-15"), notes: "Complete fabrication of all signs" },
+    { projectId: project1.id, kind: "ship", date: new Date("2024-04-20"), notes: "Ship all signs to site" },
+    { projectId: project1.id, kind: "install", date: new Date("2024-05-01"), notes: "Begin installation" },
+    { projectId: project1.id, kind: "inspection", date: new Date("2024-05-15"), notes: "City inspection" },
+    { projectId: project1.id, kind: "punch", date: new Date("2024-05-20"), notes: "Punch list completion" }
+  ];
+
+  for (const milestone of milestones) {
+    await storage.createMilestone(milestone);
+  }
+
+  console.log("Database seeded successfully with Phase 1 MVP data!");
 }

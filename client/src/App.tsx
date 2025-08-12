@@ -1,20 +1,14 @@
-import { Route, Switch } from "wouter";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
-import MainLayout from "@/components/layout/main-layout";
-import Projects from "@/pages/projects";
-import Drawings from "@/pages/drawings";
-<<<<<<< HEAD
-<<<<<<< HEAD
-import Takeoffs from "@/pages/takeoffs";
-import SignTypes from "@/pages/sign-types";
-import Signs from "@/pages/signs";
-import Vendors from "@/pages/vendors";
-import Login from "@/pages/login";
-import NotFound from "@/pages/not-found";
-import ProjectOverview from "@/pages/project-overview";
-import SignDetail from "@/pages/sign-detail";
-import ProofViewer from "@/pages/proof-viewer";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from '@/components/ui/toaster';
+import { TopNav } from '@/components/TopNav';
+import { Dashboard } from '@/pages/Dashboard';
+import { Projects } from '@/pages/Projects';
+import { ProjectOverview } from '@/pages/ProjectOverview';
+import { ProjectDrawings } from '@/pages/ProjectDrawings';
+import { ProjectROM } from '@/pages/ProjectROM';
+import { ProjectCode } from '@/pages/ProjectCode';
+import { ProjectRFQs } from '@/pages/ProjectRFQs';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,122 +18,27 @@ const queryClient = new QueryClient({
     },
   },
 });
-=======
-=======
->>>>>>> parent of 27122f1 (Add takeoff functionality for project sign management)
-import ProtectedRoute from "@/components/auth/protected-route";
-
-function Router() {
-  return (
-    <Switch>
-      <Route path="/login" component={Login} />
-      <Route path="/">
-        <ProtectedRoute>
-          <Projects />
-        </ProtectedRoute>
-      </Route>
-      <Route path="/projects">
-        <ProtectedRoute>
-          <Projects />
-        </ProtectedRoute>
-      </Route>
-      <Route path="/projects/:id">
-        {(params) => (
-          <ProtectedRoute>
-            <ProjectOverview projectId={params.id} />
-          </ProtectedRoute>
-        )}
-      </Route>
-      <Route path="/projects/:id/drawings">
-        {(params) => (
-          <ProtectedRoute>
-            <Drawings projectId={params.id} />
-          </ProtectedRoute>
-        )}
-      </Route>
-      <Route path="/projects/:id/sign-types">
-        {(params) => (
-          <ProtectedRoute>
-            <SignTypes projectId={params.id} />
-          </ProtectedRoute>
-        )}
-      </Route>
-      <Route path="/projects/:id/signs">
-        {(params) => (
-          <ProtectedRoute>
-            <Signs projectId={params.id} />
-          </ProtectedRoute>
-        )}
-      </Route>
-      <Route path="/signs/:id">
-        {(params) => (
-          <ProtectedRoute>
-            <SignDetail signId={params.id} />
-          </ProtectedRoute>
-        )}
-      </Route>
-      <Route path="/projects/:id/proof">
-        {(params) => (
-          <ProtectedRoute>
-            <ProofViewer projectId={params.id} />
-          </ProtectedRoute>
-        )}
-      </Route>
-      <Route path="/projects/:id/vendors">
-        {(params) => (
-          <ProtectedRoute>
-            <Vendors projectId={params.id} />
-          </ProtectedRoute>
-        )}
-      </Route>
-      <Route component={NotFound} />
-    </Switch>
-  );
-}
->>>>>>> parent of 27122f1 (Add takeoff functionality for project sign management)
-
-// Wrapper components to handle route parameters
-const ProjectOverviewWrapper = ({ params }: { params: { id: string } }) => (
-  <ProjectOverview projectId={params.id} />
-);
-
-const SignDetailWrapper = ({ params }: { params: { id: string } }) => (
-  <SignDetail signId={params.id} />
-);
-
-const DrawingsWrapper = () => <Drawings projectId="all" />;
-const TakeoffsWrapper = () => <Takeoffs projectId="all" />;
-const SignTypesWrapper = () => <SignTypes projectId="all" />;
-const SignsWrapper = () => <Signs projectId="all" />;
-const VendorsWrapper = () => <Vendors projectId="all" />;
-const ProofViewerWrapper = () => <ProofViewer projectId="all" />;
 
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <Switch>
-          <Route path="/login" component={Login} />
-          <Route path="/proof-viewer" component={ProofViewerWrapper} />
-          <Route path="/">
-            <MainLayout>
-              <Switch>
-                <Route path="/" component={Projects} />
-                <Route path="/projects" component={Projects} />
-                <Route path="/projects/:id" component={ProjectOverviewWrapper} />
-                <Route path="/drawings" component={DrawingsWrapper} />
-                <Route path="/takeoffs" component={TakeoffsWrapper} />
-                <Route path="/sign-types" component={SignTypesWrapper} />
-                <Route path="/signs" component={SignsWrapper} />
-                <Route path="/signs/:id" component={SignDetailWrapper} />
-                <Route path="/vendors" component={VendorsWrapper} />
-                <Route component={NotFound} />
-              </Switch>
-            </MainLayout>
-          </Route>
-        </Switch>
-        <Toaster />
-      </div>
+      <Router>
+        <div className="min-h-screen bg-gray-50">
+          <TopNav />
+          <main className="container mx-auto px-4 py-8">
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/projects" element={<Projects />} />
+              <Route path="/projects/:id" element={<ProjectOverview />} />
+              <Route path="/projects/:id/drawings" element={<ProjectDrawings />} />
+              <Route path="/projects/:id/rom" element={<ProjectROM />} />
+              <Route path="/projects/:id/code" element={<ProjectCode />} />
+              <Route path="/projects/:id/rfqs" element={<ProjectRFQs />} />
+            </Routes>
+          </main>
+          <Toaster />
+        </div>
+      </Router>
     </QueryClientProvider>
   );
 }
