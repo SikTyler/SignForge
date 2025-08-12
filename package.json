@@ -17,6 +17,7 @@
     "@hookform/resolvers": "^3.10.0",
     "@jridgewell/trace-mapping": "^0.3.25",
     "@neondatabase/serverless": "^0.10.4",
+    "@plasmicapp/cli": "^0.1.341",
     "@plasmicapp/loader-nextjs": "^1.0.435",
     "@plasmicapp/loader-react": "^1.0.395",
     "@plasmicapp/react-web": "^0.2.397",
