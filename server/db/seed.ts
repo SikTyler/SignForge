@@ -6,13 +6,6 @@ import bcrypt from "bcrypt";
 export async function seedDatabase() {
   console.log("Seeding database...");
 
-  // Check if already seeded
-  const existingUser = await storage.getUserByEmail("pm@demo.com");
-  if (existingUser) {
-    console.log("Database already seeded, skipping...");
-    return;
-  }
-
   // Create demo users
   const pmUser = await storage.createUser({
     email: "pm@demo.com",
@@ -150,8 +143,29 @@ export async function seedDatabase() {
     });
   }
 
-  // Create code summary  
-  // TODO: Implement code summary creation through DatabaseStorage
+  // Create code summary
+  (storage as any).codeSummaries.set("code1", {
+    id: "code1",
+    projectId: project.id,
+    jurisdiction: "Seattle, WA",
+    requiredJson: [
+      "ADA Room Identification",
+      "Exit & Emergency Signage", 
+      "Parking Designations",
+      "Monument Signage"
+    ],
+    restrictionsJson: [
+      "No LED displays after 10pm",
+      "Max height: 25 feet",
+      "Setback: 15 feet from property line"
+    ],
+    allowancesJson: [
+      "Illuminated signage permitted",
+      "Multiple tenant panels",
+      "Digital directory displays"
+    ],
+    updatedAt: new Date()
+  });
 
   // Create example packages
   const packages = [
@@ -290,6 +304,7 @@ export async function seedDatabase() {
     pinnedY: 0.32
   });
 
+<<<<<<< HEAD
   // Create master sign types for takeoffs
   const masterSignTypes = [
     {
@@ -356,4 +371,7 @@ export async function seedDatabase() {
   }
 
   console.log("Database seeded successfully with master sign types!");
+=======
+  console.log("Database seeded successfully!");
+>>>>>>> parent of 27122f1 (Add takeoff functionality for project sign management)
 }

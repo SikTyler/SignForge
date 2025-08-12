@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import MainLayout from "@/components/layout/main-layout";
 import Projects from "@/pages/projects";
 import Drawings from "@/pages/drawings";
+<<<<<<< HEAD
 import Takeoffs from "@/pages/takeoffs";
 import SignTypes from "@/pages/sign-types";
 import Signs from "@/pages/signs";
@@ -22,6 +23,77 @@ const queryClient = new QueryClient({
     },
   },
 });
+=======
+import ProtectedRoute from "@/components/auth/protected-route";
+
+function Router() {
+  return (
+    <Switch>
+      <Route path="/login" component={Login} />
+      <Route path="/">
+        <ProtectedRoute>
+          <Projects />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/projects">
+        <ProtectedRoute>
+          <Projects />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/projects/:id">
+        {(params) => (
+          <ProtectedRoute>
+            <ProjectOverview projectId={params.id} />
+          </ProtectedRoute>
+        )}
+      </Route>
+      <Route path="/projects/:id/drawings">
+        {(params) => (
+          <ProtectedRoute>
+            <Drawings projectId={params.id} />
+          </ProtectedRoute>
+        )}
+      </Route>
+      <Route path="/projects/:id/sign-types">
+        {(params) => (
+          <ProtectedRoute>
+            <SignTypes projectId={params.id} />
+          </ProtectedRoute>
+        )}
+      </Route>
+      <Route path="/projects/:id/signs">
+        {(params) => (
+          <ProtectedRoute>
+            <Signs projectId={params.id} />
+          </ProtectedRoute>
+        )}
+      </Route>
+      <Route path="/signs/:id">
+        {(params) => (
+          <ProtectedRoute>
+            <SignDetail signId={params.id} />
+          </ProtectedRoute>
+        )}
+      </Route>
+      <Route path="/projects/:id/proof">
+        {(params) => (
+          <ProtectedRoute>
+            <ProofViewer projectId={params.id} />
+          </ProtectedRoute>
+        )}
+      </Route>
+      <Route path="/projects/:id/vendors">
+        {(params) => (
+          <ProtectedRoute>
+            <Vendors projectId={params.id} />
+          </ProtectedRoute>
+        )}
+      </Route>
+      <Route component={NotFound} />
+    </Switch>
+  );
+}
+>>>>>>> parent of 27122f1 (Add takeoff functionality for project sign management)
 
 // Wrapper components to handle route parameters
 const ProjectOverviewWrapper = ({ params }: { params: { id: string } }) => (

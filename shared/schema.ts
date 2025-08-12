@@ -16,10 +16,9 @@ export const users = pgTable("users", {
 export const projects = pgTable("projects", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
-  address: text("address"),
-  clientOrg: text("client_org"),
+  address: text("address").notNull(),
+  clientOrg: text("client_org").notNull(),
   status: text("status").notNull().default('active'),
-  logoPath: text("logo_path"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -27,9 +26,6 @@ export const drawingSets = pgTable("drawing_sets", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   projectId: varchar("project_id").notNull().references(() => projects.id),
   filePath: text("file_path").notNull(),
-  filename: text("filename").notNull(),
-  totalPages: integer("total_pages").notNull(),
-  includedPagesJson: text("included_pages_json"),
   notes: text("notes"),
   uploadedAt: timestamp("uploaded_at").defaultNow().notNull(),
 });
@@ -39,7 +35,7 @@ export const signTypes = pgTable("sign_types", {
   projectId: varchar("project_id").notNull().references(() => projects.id),
   name: text("name").notNull(),
   category: text("category").notNull(),
-  specPageId: varchar("spec_page_id"),
+  specPageId: varchar("spec_page_id").references(() => specPages.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -161,45 +157,6 @@ export const bids = pgTable("bids", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-// New tables for takeoffs functionality
-export const takeoffPages = pgTable("takeoff_pages", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  drawingSetId: varchar("drawing_set_id").notNull().references(() => drawingSets.id),
-  pageNumber: integer("page_number").notNull(),
-  isIncluded: boolean("is_included").notNull().default(false),
-});
-
-export const masterSignTypes = pgTable("master_sign_types", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  name: text("name").notNull(),
-  category: text("category").notNull(),
-  defaultSpecsJson: json("default_specs_json"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
-export const projectSignTypes = pgTable("project_sign_types", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").notNull().references(() => projects.id),
-  name: text("name").notNull(),
-  category: text("category").notNull(),
-  specsJson: json("specs_json"),
-  sourceMasterId: varchar("source_master_id").references(() => masterSignTypes.id),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
-export const takeoffMarkers = pgTable("takeoff_markers", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: varchar("project_id").notNull().references(() => projects.id),
-  drawingSetId: varchar("drawing_set_id").notNull().references(() => drawingSets.id),
-  pageNumber: integer("page_number").notNull(),
-  xNorm: real("x_norm").notNull(), // Normalized 0-1 coordinates
-  yNorm: real("y_norm").notNull(),
-  signTypeId: varchar("sign_type_id").references(() => projectSignTypes.id),
-  stage: text("stage").notNull().default('draft'), // 'draft' | 'review' | 'approved'
-  notes: text("notes"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
 // Insert Schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -251,26 +208,6 @@ export const insertBidSchema = createInsertSchema(bids).omit({
   createdAt: true,
 });
 
-// New insert schemas
-export const insertTakeoffPageSchema = createInsertSchema(takeoffPages).omit({
-  id: true,
-});
-
-export const insertMasterSignTypeSchema = createInsertSchema(masterSignTypes).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertProjectSignTypeSchema = createInsertSchema(projectSignTypes).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertTakeoffMarkerSchema = createInsertSchema(takeoffMarkers).omit({
-  id: true,
-  createdAt: true,
-});
-
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -298,13 +235,3 @@ export type Bid = typeof bids.$inferSelect;
 export type InsertBid = z.infer<typeof insertBidSchema>;
 export type Proof = typeof proofs.$inferSelect;
 export type ProofItem = typeof proofItems.$inferSelect;
-
-// New types
-export type TakeoffPage = typeof takeoffPages.$inferSelect;
-export type InsertTakeoffPage = z.infer<typeof insertTakeoffPageSchema>;
-export type MasterSignType = typeof masterSignTypes.$inferSelect;
-export type InsertMasterSignType = z.infer<typeof insertMasterSignTypeSchema>;
-export type ProjectSignType = typeof projectSignTypes.$inferSelect;
-export type InsertProjectSignType = z.infer<typeof insertProjectSignTypeSchema>;
-export type TakeoffMarker = typeof takeoffMarkers.$inferSelect;
-export type InsertTakeoffMarker = z.infer<typeof insertTakeoffMarkerSchema>;
