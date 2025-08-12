@@ -3,10 +3,12 @@ import React from 'react';
 // Try to import a generated Plasmic page if it exists
 let PlasmicDemoPage: React.ComponentType | null = null;
 
+// Plasmic components are generated at build time, so we should use a regular import and handle errors gracefully.
 try {
-  // This will only work if Plasmic components have been generated
-  const { PlasmicHomepage } = await import('./plasmic/PlasmicHomepage');
-  PlasmicDemoPage = PlasmicHomepage;
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  // Use require to avoid breaking the build if the file doesn't exist
+  // @ts-ignore
+  PlasmicDemoPage = require('./plasmic/PlasmicHomepage').PlasmicHomepage;
 } catch (error) {
   // Plasmic components not yet generated
   console.log('Plasmic components not found - run npm run plasmic:sync first');
