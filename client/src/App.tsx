@@ -5,6 +5,7 @@ import MainLayout from "@/components/layout/main-layout";
 import Projects from "@/pages/projects";
 import Drawings from "@/pages/drawings";
 <<<<<<< HEAD
+<<<<<<< HEAD
 import Takeoffs from "@/pages/takeoffs";
 import SignTypes from "@/pages/sign-types";
 import Signs from "@/pages/signs";
@@ -24,6 +25,8 @@ const queryClient = new QueryClient({
   },
 });
 =======
+=======
+>>>>>>> parent of 27122f1 (Add takeoff functionality for project sign management)
 import ProtectedRoute from "@/components/auth/protected-route";
 
 function Router() {

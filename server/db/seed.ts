@@ -305,6 +305,7 @@ export async function seedDatabase() {
   });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   // Create master sign types for takeoffs
   const masterSignTypes = [
     {
@@ -371,6 +372,9 @@ export async function seedDatabase() {
   }
 
   console.log("Database seeded successfully with master sign types!");
+=======
+  console.log("Database seeded successfully!");
+>>>>>>> parent of 27122f1 (Add takeoff functionality for project sign management)
 =======
   console.log("Database seeded successfully!");
 >>>>>>> parent of 27122f1 (Add takeoff functionality for project sign management)

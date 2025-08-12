@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, Building2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -31,6 +32,9 @@ const createProjectSchema = z.object({
 });
 
 type CreateProjectForm = z.infer<typeof createProjectSchema>;
+=======
+import EmptyState from "@/components/common/empty-state";
+>>>>>>> parent of 27122f1 (Add takeoff functionality for project sign management)
 =======
 import EmptyState from "@/components/common/empty-state";
 >>>>>>> parent of 27122f1 (Add takeoff functionality for project sign management)

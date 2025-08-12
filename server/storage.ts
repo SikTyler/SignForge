@@ -5,15 +5,21 @@ import {
   type TileArtwork, type InsertTileArtwork, type Comment, type InsertComment,
   type RomPricing, type CodeSummary, type ExamplePackage, type Vendor,
 <<<<<<< HEAD
+<<<<<<< HEAD
   type Rfq, type InsertRfq, type Bid, type InsertBid, type Proof, type ProofItem,
   type TakeoffPage, type InsertTakeoffPage, type MasterSignType, type InsertMasterSignType,
   type ProjectSignType, type InsertProjectSignType, type TakeoffMarker, type InsertTakeoffMarker
 } from "@shared/schema-sqlite";
 =======
+=======
+>>>>>>> parent of 27122f1 (Add takeoff functionality for project sign management)
   type Rfq, type InsertRfq, type Bid, type InsertBid, type Proof, type ProofItem
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import bcrypt from "bcrypt";
+<<<<<<< HEAD
+>>>>>>> parent of 27122f1 (Add takeoff functionality for project sign management)
+=======
 >>>>>>> parent of 27122f1 (Add takeoff functionality for project sign management)
 
 export interface IStorage {

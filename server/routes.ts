@@ -2,11 +2,15 @@ import express, { type Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { 
   insertSignSchema, insertCommentSchema, insertDrawingSetSchema, insertSpecPageSchema, 
   insertRfqSchema, insertBidSchema, insertProjectSchema, insertMasterSignTypeSchema,
   insertProjectSignTypeSchema, insertTakeoffMarkerSchema
 } from "@shared/schema-sqlite";
+=======
+import { insertSignSchema, insertCommentSchema, insertDrawingSetSchema, insertSpecPageSchema, insertRfqSchema, insertBidSchema } from "@shared/schema";
+>>>>>>> parent of 27122f1 (Add takeoff functionality for project sign management)
 =======
 import { insertSignSchema, insertCommentSchema, insertDrawingSetSchema, insertSpecPageSchema, insertRfqSchema, insertBidSchema } from "@shared/schema";
 >>>>>>> parent of 27122f1 (Add takeoff functionality for project sign management)
