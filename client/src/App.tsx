@@ -13,6 +13,7 @@ import Signs from "@/pages/signs";
 import ProofViewer from "@/pages/proof-viewer";
 import Vendors from "@/pages/vendors";
 import Drawings from "@/pages/drawings";
+import Takeoffs from "@/pages/takeoffs";
 import ProtectedRoute from "@/components/auth/protected-route";
 
 function Router() {
@@ -75,6 +76,13 @@ function Router() {
         {(params) => (
           <ProtectedRoute>
             <Vendors projectId={params.id} />
+          </ProtectedRoute>
+        )}
+      </Route>
+      <Route path="/projects/:id/takeoffs">
+        {(params) => (
+          <ProtectedRoute>
+            <Takeoffs projectId={params.id} />
           </ProtectedRoute>
         )}
       </Route>

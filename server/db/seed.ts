@@ -4,6 +4,13 @@ import bcrypt from "bcrypt";
 export async function seedDatabase() {
   console.log("Seeding database...");
 
+  // Check if already seeded
+  const existingUser = await storage.getUserByEmail("pm@demo.com");
+  if (existingUser) {
+    console.log("Database already seeded, skipping...");
+    return;
+  }
+
   // Create demo users
   const pmUser = await storage.createUser({
     email: "pm@demo.com",
@@ -141,29 +148,8 @@ export async function seedDatabase() {
     });
   }
 
-  // Create code summary
-  (storage as any).codeSummaries.set("code1", {
-    id: "code1",
-    projectId: project.id,
-    jurisdiction: "Seattle, WA",
-    requiredJson: [
-      "ADA Room Identification",
-      "Exit & Emergency Signage", 
-      "Parking Designations",
-      "Monument Signage"
-    ],
-    restrictionsJson: [
-      "No LED displays after 10pm",
-      "Max height: 25 feet",
-      "Setback: 15 feet from property line"
-    ],
-    allowancesJson: [
-      "Illuminated signage permitted",
-      "Multiple tenant panels",
-      "Digital directory displays"
-    ],
-    updatedAt: new Date()
-  });
+  // Create code summary  
+  // TODO: Implement code summary creation through DatabaseStorage
 
   // Create example packages
   const packages = [
@@ -302,5 +288,70 @@ export async function seedDatabase() {
     pinnedY: 0.32
   });
 
-  console.log("Database seeded successfully!");
+  // Create master sign types for takeoffs
+  const masterSignTypes = [
+    {
+      name: "ADA Room ID",
+      category: "Interior",
+      defaultSpecsJson: {
+        material: "Acrylic",
+        mounting: "Wall-mounted",
+        braille: true,
+        contrast: "Light on Dark"
+      }
+    },
+    {
+      name: "Exit Signs",
+      category: "Safety",
+      defaultSpecsJson: {
+        material: "LED",
+        mounting: "Ceiling/Wall",
+        illuminated: true,
+        emergency: true
+      }
+    },
+    {
+      name: "Directional Wayfinding",
+      category: "Wayfinding", 
+      defaultSpecsJson: {
+        material: "Aluminum",
+        mounting: "Post-mounted",
+        finish: "Powder-coated"
+      }
+    },
+    {
+      name: "Monument Sign",
+      category: "Exterior",
+      defaultSpecsJson: {
+        material: "Stone/Metal",
+        mounting: "Ground-mounted",
+        illuminated: true,
+        foundation: "Required"
+      }
+    },
+    {
+      name: "Parking Signs", 
+      category: "Traffic",
+      defaultSpecsJson: {
+        material: "Aluminum",
+        mounting: "Post-mounted",
+        reflective: true
+      }
+    },
+    {
+      name: "Building Directory",
+      category: "Information",
+      defaultSpecsJson: {
+        material: "Metal/Glass",
+        mounting: "Wall-mounted",
+        changeable: true
+      }
+    }
+  ];
+
+  for (const masterType of masterSignTypes) {
+    await storage.createMasterSignType(masterType);
+  }
+
+  console.log("Database seeded successfully with master sign types!");
 }

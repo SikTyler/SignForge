@@ -1,24 +1,59 @@
 import express, { type Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertSignSchema, insertCommentSchema, insertDrawingSetSchema, insertSpecPageSchema, insertRfqSchema, insertBidSchema } from "@shared/schema";
+import { 
+  insertSignSchema, insertCommentSchema, insertDrawingSetSchema, insertSpecPageSchema, 
+  insertRfqSchema, insertBidSchema, insertProjectSchema, insertMasterSignTypeSchema,
+  insertProjectSignTypeSchema, insertTakeoffMarkerSchema
+} from "@shared/schema";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { seedDatabase } from "./db/seed";
 
-// Ensure uploads directory exists
+// Ensure uploads directories exist
 const uploadsDir = path.resolve(process.cwd(), "uploads");
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
+const logosDir = path.resolve(uploadsDir, "logos");
+const drawingsDir = path.resolve(uploadsDir, "drawings");
 
-// Configure multer for file uploads
-const upload = multer({
+[uploadsDir, logosDir, drawingsDir].forEach(dir => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+});
+
+// Configure multer for different file types
+const logoUpload = multer({
+  dest: logosDir,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit for logos
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['.jpg', '.jpeg', '.png', '.gif'];
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (allowedTypes.includes(ext)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only JPG, PNG, and GIF files are allowed for logos.'));
+    }
+  }
+});
+
+const drawingUpload = multer({
+  dest: drawingsDir,
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit for PDFs
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['.pdf'];
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (allowedTypes.includes(ext)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only PDF files are allowed for drawings.'));
+    }
+  }
+});
+
+const generalUpload = multer({
   dest: uploadsDir,
-  limits: {
-    fileSize: 10 * 1024 * 1024 // 10MB limit
-  },
+  limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowedTypes = ['.pdf', '.jpg', '.jpeg', '.png'];
     const ext = path.extname(file.originalname).toLowerCase();
@@ -100,6 +135,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/projects", logoUpload.single('logo'), async (req, res) => {
+    try {
+      const { name, address, clientOrg, status = "active" } = req.body;
+      
+      if (!name || !address || !clientOrg) {
+        return res.status(400).json({ message: "Missing required fields: name, address, clientOrg" });
+      }
+
+      const projectData = {
+        name, 
+        address, 
+        clientOrg, 
+        status,
+        logoPath: req.file ? `/uploads/logos/${req.file.filename}` : null
+      };
+
+      const validatedData = insertProjectSchema.parse(projectData);
+      const project = await storage.createProject(validatedData);
+      
+      res.json(project);
+    } catch (error) {
+      console.error("Create project error:", error);
+      res.status(500).json({ message: "Failed to create project" });
+    }
+  });
+
   app.get("/api/projects/:id", async (req, res) => {
     try {
       const project = await storage.getProject(req.params.id);
@@ -124,22 +185,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/projects/:id/drawings", upload.single('file'), async (req, res) => {
+  app.post("/api/projects/:id/drawings", drawingUpload.single('file'), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
       }
 
-      const drawingSet = await storage.createDrawingSet({
+      // For PDF files, we'll process them to extract page count
+      const isPdf = req.file.originalname.toLowerCase().endsWith('.pdf');
+      let totalPages = 1;
+      
+      // TODO: Add PDF processing with pdfjs-dist to extract actual page count
+      if (isPdf) {
+        totalPages = parseInt(req.body.totalPages) || 1;
+      }
+
+      const drawingSetData = {
         projectId: req.params.id,
-        filePath: `/uploads/${req.file.filename}`,
+        name: req.body.name || req.file.originalname,
+        filePath: `/uploads/drawings/${req.file.filename}`,
+        totalPages: totalPages,
         notes: req.body.notes || null
-      });
+      };
+
+      const validatedData = insertDrawingSetSchema.parse(drawingSetData);
+      const drawingSet = await storage.createDrawingSet(validatedData);
 
       res.json(drawingSet);
     } catch (error) {
       console.error("Upload drawing error:", error);
       res.status(500).json({ message: "Failed to upload drawing" });
+    }
+  });
+
+  // Update drawing set pages (for takeoffs)
+  app.patch("/api/drawings/:id/pages", async (req, res) => {
+    try {
+      const { includedPages } = req.body;
+      
+      if (!Array.isArray(includedPages)) {
+        return res.status(400).json({ message: "includedPages must be an array" });
+      }
+
+      const updatedDrawingSet = await storage.updateDrawingSetPages(req.params.id, includedPages);
+      res.json(updatedDrawingSet);
+    } catch (error) {
+      console.error("Update drawing pages error:", error);
+      res.status(500).json({ message: "Failed to update drawing pages" });
+    }
+  });
+
+  // Get takeoff pages for a drawing set
+  app.get("/api/drawings/:id/pages", async (req, res) => {
+    try {
+      const takeoffPages = await storage.getTakeoffPages(req.params.id);
+      res.json(takeoffPages);
+    } catch (error) {
+      console.error("Get takeoff pages error:", error);
+      res.status(500).json({ message: "Failed to fetch takeoff pages" });
     }
   });
 
@@ -197,7 +300,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/sign-types/:id/spec", upload.single('file'), async (req, res) => {
+  app.post("/api/sign-types/:id/spec", generalUpload.single('file'), async (req, res) => {
     try {
       const signType = await storage.getSignType(req.params.id);
       if (!signType) {
@@ -273,7 +376,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/signs/:id/tile-art", upload.single('file'), async (req, res) => {
+  app.post("/api/signs/:id/tile-art", generalUpload.single('file'), async (req, res) => {
     try {
       const sign = await storage.getSign(req.params.id);
       if (!sign) {
@@ -417,6 +520,155 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Create bid error:", error);
       res.status(500).json({ message: "Failed to create bid" });
+    }
+  });
+
+  // Master Sign Types routes
+  app.get("/api/master-sign-types", async (req, res) => {
+    try {
+      const masterSignTypes = await storage.getMasterSignTypes();
+      res.json(masterSignTypes);
+    } catch (error) {
+      console.error("Get master sign types error:", error);
+      res.status(500).json({ message: "Failed to fetch master sign types" });
+    }
+  });
+
+  app.post("/api/master-sign-types", async (req, res) => {
+    try {
+      const validatedData = insertMasterSignTypeSchema.parse(req.body);
+      const masterSignType = await storage.createMasterSignType(validatedData);
+      res.json(masterSignType);
+    } catch (error) {
+      console.error("Create master sign type error:", error);
+      res.status(500).json({ message: "Failed to create master sign type" });
+    }
+  });
+
+  // Project Sign Types routes
+  app.get("/api/projects/:id/sign-types-takeoff", async (req, res) => {
+    try {
+      const projectSignTypes = await storage.getProjectSignTypes(req.params.id);
+      res.json(projectSignTypes);
+    } catch (error) {
+      console.error("Get project sign types error:", error);
+      res.status(500).json({ message: "Failed to fetch project sign types" });
+    }
+  });
+
+  app.post("/api/projects/:id/sign-types-takeoff", async (req, res) => {
+    try {
+      const projectSignTypeData = {
+        projectId: req.params.id,
+        ...req.body
+      };
+      
+      const validatedData = insertProjectSignTypeSchema.parse(projectSignTypeData);
+      const projectSignType = await storage.createProjectSignType(validatedData);
+      res.json(projectSignType);
+    } catch (error) {
+      console.error("Create project sign type error:", error);
+      res.status(500).json({ message: "Failed to create project sign type" });
+    }
+  });
+
+  app.post("/api/projects/:id/copy-master-sign-types", async (req, res) => {
+    try {
+      const { masterIds } = req.body;
+      
+      if (!Array.isArray(masterIds) || masterIds.length === 0) {
+        return res.status(400).json({ message: "masterIds must be a non-empty array" });
+      }
+
+      const copiedSignTypes = await storage.copyMasterSignTypesToProject(req.params.id, masterIds);
+      res.json(copiedSignTypes);
+    } catch (error) {
+      console.error("Copy master sign types error:", error);
+      res.status(500).json({ message: "Failed to copy master sign types" });
+    }
+  });
+
+  app.patch("/api/sign-types-takeoff/:id", async (req, res) => {
+    try {
+      const updatedProjectSignType = await storage.updateProjectSignType(req.params.id, req.body);
+      res.json(updatedProjectSignType);
+    } catch (error) {
+      console.error("Update project sign type error:", error);
+      res.status(500).json({ message: "Failed to update project sign type" });
+    }
+  });
+
+  app.delete("/api/sign-types-takeoff/:id", async (req, res) => {
+    try {
+      await storage.deleteProjectSignType(req.params.id);
+      res.json({ message: "Project sign type deleted successfully" });
+    } catch (error) {
+      console.error("Delete project sign type error:", error);
+      res.status(500).json({ message: "Failed to delete project sign type" });
+    }
+  });
+
+  // Takeoff Markers routes
+  app.get("/api/projects/:id/takeoff-markers", async (req, res) => {
+    try {
+      const markers = await storage.getTakeoffMarkers(req.params.id);
+      res.json(markers);
+    } catch (error) {
+      console.error("Get takeoff markers error:", error);
+      res.status(500).json({ message: "Failed to fetch takeoff markers" });
+    }
+  });
+
+  app.get("/api/drawings/:drawingSetId/pages/:pageNumber/markers", async (req, res) => {
+    try {
+      const { drawingSetId, pageNumber } = req.params;
+      const markers = await storage.getTakeoffMarkersForPage(drawingSetId, parseInt(pageNumber));
+      res.json(markers);
+    } catch (error) {
+      console.error("Get page markers error:", error);
+      res.status(500).json({ message: "Failed to fetch page markers" });
+    }
+  });
+
+  app.post("/api/takeoff-markers", async (req, res) => {
+    try {
+      const validatedData = insertTakeoffMarkerSchema.parse(req.body);
+      const marker = await storage.createTakeoffMarker(validatedData);
+      res.json(marker);
+    } catch (error) {
+      console.error("Create takeoff marker error:", error);
+      res.status(500).json({ message: "Failed to create takeoff marker" });
+    }
+  });
+
+  app.patch("/api/takeoff-markers/:id", async (req, res) => {
+    try {
+      const updatedMarker = await storage.updateTakeoffMarker(req.params.id, req.body);
+      res.json(updatedMarker);
+    } catch (error) {
+      console.error("Update takeoff marker error:", error);
+      res.status(500).json({ message: "Failed to update takeoff marker" });
+    }
+  });
+
+  app.delete("/api/takeoff-markers/:id", async (req, res) => {
+    try {
+      await storage.deleteTakeoffMarker(req.params.id);
+      res.json({ message: "Takeoff marker deleted successfully" });
+    } catch (error) {
+      console.error("Delete takeoff marker error:", error);
+      res.status(500).json({ message: "Failed to delete takeoff marker" });
+    }
+  });
+
+  // Combined takeoffs data endpoint
+  app.get("/api/projects/:id/takeoffs", async (req, res) => {
+    try {
+      const takeoffsData = await storage.getTakeoffsData(req.params.id);
+      res.json(takeoffsData);
+    } catch (error) {
+      console.error("Get takeoffs data error:", error);
+      res.status(500).json({ message: "Failed to fetch takeoffs data" });
     }
   });
 
