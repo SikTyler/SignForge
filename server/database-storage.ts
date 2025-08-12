@@ -10,8 +10,8 @@ import {
   users, projects, drawingSets, signTypes, specPages, signs, tileArtworks, comments,
   romPricing, codeSummaries, examplePackages, vendors, rfqs, bids, proofs, proofItems,
   takeoffPages, masterSignTypes, projectSignTypes, takeoffMarkers
-} from "@shared/schema";
-import { db } from "./db";
+} from "@shared/schema-sqlite";
+import { db } from "./db-sqlite";
 import { eq, and, inArray, sql } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import { IStorage } from "./storage";

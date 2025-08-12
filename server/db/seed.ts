@@ -1,4 +1,6 @@
-import { storage } from "../storage";
+import { DatabaseStorage } from "../database-storage";
+
+const storage = new DatabaseStorage();
 import bcrypt from "bcrypt";
 
 export async function seedDatabase() {
@@ -68,34 +70,34 @@ export async function seedDatabase() {
     signTypeId: adaSignType.id,
     title: "ADA Room ID Specifications",
     version: "v2.1",
-    jsonSpecs: {
+    jsonSpecs: JSON.stringify({
       material: "Acrylic with Braille",
       mounting: "Wall mounted with standoffs",
       fontSize: "18pt minimum",
       contrast: "70% minimum"
-    }
+    })
   });
 
   const parkingSpec = await storage.createSpecPage({
     signTypeId: parkingSignType.id,
     title: "Parking Sign Specifications", 
     version: "v1.0",
-    jsonSpecs: {
+    jsonSpecs: JSON.stringify({
       material: "Aluminum composite",
       mounting: "Post mounted",
       reflectivity: "Engineer grade"
-    }
+    })
   });
 
   const monumentSpec = await storage.createSpecPage({
     signTypeId: monumentSignType.id,
     title: "Monument Sign Specifications",
     version: "v3.2", 
-    jsonSpecs: {
+    jsonSpecs: JSON.stringify({
       material: "Natural stone with LED lighting",
       height: "8 feet maximum",
       foundation: "Concrete footer required"
-    }
+    })
   });
 
   // Update sign types with spec page IDs
@@ -142,9 +144,9 @@ export async function seedDatabase() {
       signId: sign.id,
       filePath: `/uploads/artwork-${sign.id}.png`,
       version: "v1.0",
-      paramsJson: {
+      paramsJson: JSON.stringify({
         stale: sign.signTypeName === "ADA Room ID" // Mark ADA signs as stale
-      }
+      })
     });
   }
 
@@ -203,10 +205,10 @@ export async function seedDatabase() {
   // Create RFQ and bids
   const rfq = await storage.createRfq({
     projectId: project.id,
-    scopeJson: {
+    scopeJson: JSON.stringify({
       title: "Exterior Signage Package - Westfield Commons",
       description: "Monument sign, parking signs, and wayfinding elements"
-    },
+    }),
     dueDate: new Date("2024-03-15"),
     status: "open"
   });
@@ -293,59 +295,59 @@ export async function seedDatabase() {
     {
       name: "ADA Room ID",
       category: "Interior",
-      defaultSpecsJson: {
+      defaultSpecsJson: JSON.stringify({
         material: "Acrylic",
         mounting: "Wall-mounted",
         braille: true,
         contrast: "Light on Dark"
-      }
+      })
     },
     {
       name: "Exit Signs",
       category: "Safety",
-      defaultSpecsJson: {
+      defaultSpecsJson: JSON.stringify({
         material: "LED",
         mounting: "Ceiling/Wall",
         illuminated: true,
         emergency: true
-      }
+      })
     },
     {
       name: "Directional Wayfinding",
       category: "Wayfinding", 
-      defaultSpecsJson: {
+      defaultSpecsJson: JSON.stringify({
         material: "Aluminum",
         mounting: "Post-mounted",
         finish: "Powder-coated"
-      }
+      })
     },
     {
       name: "Monument Sign",
       category: "Exterior",
-      defaultSpecsJson: {
+      defaultSpecsJson: JSON.stringify({
         material: "Stone/Metal",
         mounting: "Ground-mounted",
         illuminated: true,
         foundation: "Required"
-      }
+      })
     },
     {
       name: "Parking Signs", 
       category: "Traffic",
-      defaultSpecsJson: {
+      defaultSpecsJson: JSON.stringify({
         material: "Aluminum",
         mounting: "Post-mounted",
         reflective: true
-      }
+      })
     },
     {
       name: "Building Directory",
       category: "Information",
-      defaultSpecsJson: {
+      defaultSpecsJson: JSON.stringify({
         material: "Metal/Glass",
         mounting: "Wall-mounted",
         changeable: true
-      }
+      })
     }
   ];
 

@@ -1,0 +1,1202 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignForge - Multifamily Signage Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#E3F2FD',
+                            100: '#BBDEFB',
+                            500: '#1976D2',
+                            600: '#1565C0',
+                            700: '#0D47A1'
+                        },
+                        gray: {
+                            50: '#FAFAFA',
+                            100: '#F5F5F5',
+                            200: '#E0E0E0',
+                            400: '#9E9E9E',
+                            600: '#616161',
+                            700: '#424242',
+                            900: '#212121'
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- @COMPONENT: LoginPage -->
+    <div id="loginPage" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100">
+        <div class="max-w-md w-full space-y-8 p-8">
+            <div class="text-center">
+                <div class="mx-auto h-16 w-16 bg-primary-500 rounded-xl flex items-center justify-center mb-6">
+                    <i class="fas fa-signs-post text-white text-2xl"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-900">SignForge</h2>
+                <p class="mt-2 text-gray-600">Multifamily Signage Platform</p>
+            </div>
+            <form class="mt-8 space-y-6" data-mock="true">
+                <div class="space-y-4">
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                        <input id="email" type="email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" placeholder="Enter your email" data-mock="true">
+                    </div>
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                        <input id="password" type="password" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500" placeholder="Enter your password" data-mock="true">
+                    </div>
+                </div>
+                <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-500 hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors" data-event="click:handleLogin">
+                    Sign In
+                </button>
+            </form>
+            <div class="mt-6 text-sm text-gray-600">
+                <strong>Demo Users:</strong><br>
+                <span class="block">PM: pm@demo.com / password</span>
+                <span class="block">Developer: dev@demo.com / password</span>
+                <span class="block">Vendor: vendor@demo.com / password</span>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: LoginPage -->
+
+    <!-- @COMPONENT: MainApp -->
+    <div id="mainApp" class="hidden min-h-screen bg-gray-50">
+        <!-- Top Navigation -->
+        <!-- @COMPONENT: TopNavigation -->
+        <nav class="bg-white shadow-sm border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 flex items-center">
+                            <div class="h-8 w-8 bg-primary-500 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-signs-post text-white text-sm"></i>
+                            </div>
+                            <span class="text-xl font-bold text-gray-900">SignForge</span>
+                        </div>
+                        <div class="ml-8">
+                            <select class="border border-gray-300 rounded-md px-3 py-1 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" data-mock="true">
+                                <option data-bind="project.name">Westfield Commons Phase 2</option>
+                                <option>Harbor Point Residences</option>
+                                <option>Metro Heights</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button class="text-gray-400 hover:text-gray-500">
+                            <i class="fas fa-bell text-lg"></i>
+                        </button>
+                        <div class="flex items-center space-x-2">
+                            <div class="h-8 w-8 bg-primary-100 rounded-full flex items-center justify-center">
+                                <span class="text-primary-600 text-sm font-medium" data-bind="user.initials">JD</span>
+                            </div>
+                            <span class="text-sm font-medium text-gray-700" data-bind="user.name">John Doe</span>
+                            <button class="text-gray-400 hover:text-gray-500">
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        <!-- @END_COMPONENT: TopNavigation -->
+
+        <div class="flex">
+            <!-- Sidebar -->
+            <!-- @COMPONENT: ProjectSidebar -->
+            <aside class="w-64 bg-white shadow-sm min-h-screen border-r border-gray-200">
+                <nav class="mt-8 px-4">
+                    <div class="space-y-1">
+                        <a href="#overview" class="bg-primary-50 text-primary-700 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                            <i class="fas fa-chart-pie mr-3 text-primary-500"></i>
+                            Overview
+                        </a>
+                        <a href="#drawings" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                            <i class="fas fa-file-pdf mr-3 text-gray-400"></i>
+                            Drawing Sets
+                        </a>
+                        <a href="#sign-types" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                            <i class="fas fa-layer-group mr-3 text-gray-400"></i>
+                            Sign Types
+                        </a>
+                        <a href="#signs" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                            <i class="fas fa-signs-post mr-3 text-gray-400"></i>
+                            Signs
+                        </a>
+                        <a href="#proof" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                            <i class="fas fa-eye mr-3 text-gray-400"></i>
+                            Digital Proof
+                        </a>
+                        <a href="#vendors" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                            <i class="fas fa-handshake mr-3 text-gray-400"></i>
+                            Vendors & RFQs
+                        </a>
+                    </div>
+                </nav>
+            </aside>
+            <!-- @END_COMPONENT: ProjectSidebar -->
+
+            <!-- Main Content -->
+            <main class="flex-1 p-8">
+                <!-- @COMPONENT: ProjectOverview -->
+                <div id="overviewPage" class="space-y-8">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-900" data-bind="project.name">Westfield Commons Phase 2</h1>
+                            <p class="text-gray-600" data-bind="project.address">1234 Main Street, Seattle, WA 98101</p>
+                        </div>
+                        <div class="flex space-x-3">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                                <i class="fas fa-clock mr-1 text-xs"></i>
+                                In Progress
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- ROM Summary Card -->
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-lg font-semibold text-gray-900">ROM Pricing Summary</h2>
+                            <button class="text-primary-600 hover:text-primary-700 text-sm font-medium">
+                                View Details <i class="fas fa-arrow-right ml-1 text-xs"></i>
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                            <div class="text-center">
+                                <div class="text-3xl font-bold text-gray-900" data-bind="rom.total">$284,750</div>
+                                <div class="text-sm text-gray-600">Total Estimate</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-xl font-semibold text-gray-700" data-bind="rom.signCount">47</div>
+                                <div class="text-sm text-gray-600">Total Signs</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-xl font-semibold text-gray-700" data-bind="rom.avgPrice">$6,058</div>
+                                <div class="text-sm text-gray-600">Avg. per Sign</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-xl font-semibold text-green-600" data-bind="rom.variance">-8.2%</div>
+                                <div class="text-sm text-gray-600">vs. Budget</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Code Summary Card -->
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-lg font-semibold text-gray-900">Code Compliance Summary</h2>
+                            <span class="text-sm text-gray-600" data-bind="codeSummary.jurisdiction">Seattle, WA</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <h3 class="font-medium text-gray-900 mb-2">Required Elements</h3>
+                                <ul class="space-y-1 text-sm text-gray-600">
+                                    <li><i class="fas fa-check text-green-500 mr-2"></i>ADA Room Identification</li>
+                                    <li><i class="fas fa-check text-green-500 mr-2"></i>Exit & Emergency Signage</li>
+                                    <li><i class="fas fa-check text-green-500 mr-2"></i>Parking Designations</li>
+                                    <li><i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>Monument Signage</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-gray-900 mb-2">Restrictions</h3>
+                                <ul class="space-y-1 text-sm text-gray-600">
+                                    <li><i class="fas fa-times text-red-500 mr-2"></i>No LED displays after 10pm</li>
+                                    <li><i class="fas fa-times text-red-500 mr-2"></i>Max height: 25 feet</li>
+                                    <li><i class="fas fa-times text-red-500 mr-2"></i>Setback: 15 feet from property line</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-gray-900 mb-2">Allowances</h3>
+                                <ul class="space-y-1 text-sm text-gray-600">
+                                    <li><i class="fas fa-check text-green-500 mr-2"></i>Illuminated signage permitted</li>
+                                    <li><i class="fas fa-check text-green-500 mr-2"></i>Multiple tenant panels</li>
+                                    <li><i class="fas fa-check text-green-500 mr-2"></i>Digital directory displays</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Suggested Signage & Example Packages -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- Suggested Exterior Signage -->
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <h2 class="text-lg font-semibold text-gray-900 mb-4">Suggested Exterior Signage</h2>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-monument text-primary-500 mr-3"></i>
+                                        <span class="font-medium">Monument Sign</span>
+                                    </div>
+                                    <span class="text-sm text-gray-600">Required</span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-car text-primary-500 mr-3"></i>
+                                        <span class="font-medium">Parking Directional</span>
+                                    </div>
+                                    <span class="text-sm text-gray-600">Recommended</span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-arrow-right text-primary-500 mr-3"></i>
+                                        <span class="font-medium">Wayfinding System</span>
+                                    </div>
+                                    <span class="text-sm text-gray-600">Optional</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Example Packages -->
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <h2 class="text-lg font-semibold text-gray-900 mb-4">Example Packages</h2>
+                            <div class="space-y-4">
+                                <div class="border border-gray-200 rounded-lg p-4">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <h3 class="font-medium text-gray-900">Essential Package</h3>
+                                        <span class="text-lg font-bold text-primary-600">$180K - $220K</span>
+                                    </div>
+                                    <p class="text-sm text-gray-600">Basic ADA compliance, parking signs, simple monument</p>
+                                </div>
+                                <div class="border border-primary-200 bg-primary-50 rounded-lg p-4">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <h3 class="font-medium text-gray-900">Premium Package</h3>
+                                        <span class="text-lg font-bold text-primary-600">$280K - $350K</span>
+                                    </div>
+                                    <p class="text-sm text-gray-600">Full wayfinding, illuminated monument, branded elements</p>
+                                    <span class="inline-block mt-2 px-2 py-1 bg-primary-100 text-primary-800 text-xs font-medium rounded">Recommended</span>
+                                </div>
+                                <div class="border border-gray-200 rounded-lg p-4">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <h3 class="font-medium text-gray-900">Luxury Package</h3>
+                                        <span class="text-lg font-bold text-primary-600">$420K - $500K</span>
+                                    </div>
+                                    <p class="text-sm text-gray-600">Digital displays, custom metalwork, architectural integration</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <h2 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <button class="flex items-center justify-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                <div class="text-center">
+                                    <i class="fas fa-upload text-primary-500 text-xl mb-2"></i>
+                                    <div class="text-sm font-medium">Upload Drawings</div>
+                                </div>
+                            </button>
+                            <button class="flex items-center justify-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                <div class="text-center">
+                                    <i class="fas fa-plus text-primary-500 text-xl mb-2"></i>
+                                    <div class="text-sm font-medium">Add Sign Type</div>
+                                </div>
+                            </button>
+                            <button class="flex items-center justify-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                <div class="text-center">
+                                    <i class="fas fa-eye text-primary-500 text-xl mb-2"></i>
+                                    <div class="text-sm font-medium">Review Proof</div>
+                                </div>
+                            </button>
+                            <button class="flex items-center justify-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                <div class="text-center">
+                                    <i class="fas fa-paper-plane text-primary-500 text-xl mb-2"></i>
+                                    <div class="text-sm font-medium">Send RFQ</div>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: ProjectOverview -->
+
+                <!-- @COMPONENT: SignTypesPage -->
+                <div id="signTypesPage" class="hidden space-y-6">
+                    <div class="flex justify-between items-center">
+                        <h1 class="text-2xl font-bold text-gray-900">Sign Types</h1>
+                        <button class="bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-600 transition-colors">
+                            <i class="fas fa-plus mr-2"></i>Add Sign Type
+                        </button>
+                    </div>
+
+                    <!-- Sign Types Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- @MAP: signTypes.map(signType => ( -->
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow cursor-pointer" data-event="click:viewSignType">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-semibold text-gray-900" data-bind="signType.name">ADA Room ID</h3>
+                                <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded" data-bind="signType.category">Interior</span>
+                            </div>
+                            <div class="space-y-2 mb-4">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">Spec Version:</span>
+                                    <span class="font-medium" data-bind="signType.specVersion">v2.1</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">Signs Count:</span>
+                                    <span class="font-medium" data-bind="signType.signCount">24</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">Last Updated:</span>
+                                    <span class="text-gray-500" data-bind="signType.lastUpdated">2 days ago</span>
+                                </div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="flex-1 bg-gray-100 text-gray-700 py-2 px-3 rounded text-sm hover:bg-gray-200 transition-colors">
+                                    View Spec
+                                </button>
+                                <button class="flex-1 bg-primary-100 text-primary-700 py-2 px-3 rounded text-sm hover:bg-primary-200 transition-colors">
+                                    View Signs
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow cursor-pointer">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-semibold text-gray-900">Parking Signs</h3>
+                                <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">Exterior</span>
+                            </div>
+                            <div class="space-y-2 mb-4">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">Spec Version:</span>
+                                    <span class="font-medium">v1.0</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">Signs Count:</span>
+                                    <span class="font-medium">15</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">Last Updated:</span>
+                                    <span class="text-gray-500">1 week ago</span>
+                                </div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="flex-1 bg-gray-100 text-gray-700 py-2 px-3 rounded text-sm hover:bg-gray-200 transition-colors">
+                                    View Spec
+                                </button>
+                                <button class="flex-1 bg-primary-100 text-primary-700 py-2 px-3 rounded text-sm hover:bg-primary-200 transition-colors">
+                                    View Signs
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow cursor-pointer">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-semibold text-gray-900">Monument Sign</h3>
+                                <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded">Monument</span>
+                            </div>
+                            <div class="space-y-2 mb-4">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">Spec Version:</span>
+                                    <span class="font-medium">v3.2</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">Signs Count:</span>
+                                    <span class="font-medium">3</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">Last Updated:</span>
+                                    <span class="text-gray-500">4 hours ago</span>
+                                </div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="flex-1 bg-gray-100 text-gray-700 py-2 px-3 rounded text-sm hover:bg-gray-200 transition-colors">
+                                    View Spec
+                                </button>
+                                <button class="flex-1 bg-primary-100 text-primary-700 py-2 px-3 rounded text-sm hover:bg-primary-200 transition-colors">
+                                    View Signs
+                                </button>
+                            </div>
+                        </div>
+                        <!-- @END_MAP )) -->
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: SignTypesPage -->
+
+                <!-- @COMPONENT: SignDetailPage -->
+                <div id="signDetailPage" class="hidden space-y-6">
+                    <div class="flex items-center space-x-4">
+                        <button class="text-gray-600 hover:text-gray-900">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-900" data-bind="sign.locationRef">Building A - Lobby Entrance</h1>
+                            <p class="text-gray-600">ADA Room ID Sign</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <!-- Sign Preview & Details -->
+                        <div class="lg:col-span-2 space-y-6">
+                            <!-- Artwork Preview -->
+                            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h2 class="text-lg font-semibold text-gray-900">Tile Artwork</h2>
+                                    <button class="bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-600 transition-colors text-sm">
+                                        <i class="fas fa-upload mr-2"></i>Update Artwork
+                                    </button>
+                                </div>
+                                
+                                <!-- Stale Banner -->
+                                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-exclamation-triangle text-yellow-600 mr-3"></i>
+                                        <div>
+                                            <p class="text-yellow-800 font-medium">Spec Changed - Regenerate Required</p>
+                                            <p class="text-yellow-700 text-sm">The sign type specification was updated. Please regenerate this artwork.</p>
+                                        </div>
+                                        <button class="ml-auto bg-yellow-600 text-white px-3 py-1 rounded text-sm hover:bg-yellow-700">
+                                            Regenerate
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Modern office building lobby with digital directory display -->
+                                <div class="bg-gray-100 rounded-lg p-8 text-center">
+                                    <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" alt="Professional sign mockup preview" class="mx-auto rounded-lg shadow-md max-w-md">
+                                    <p class="text-gray-600 mt-4">Current Artwork Preview</p>
+                                </div>
+                            </div>
+
+                            <!-- Sign Specifications -->
+                            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                                <h2 class="text-lg font-semibold text-gray-900 mb-4">Specifications</h2>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Width</label>
+                                        <input type="text" value="12" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500" data-bind="sign.width">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Height</label>
+                                        <input type="text" value="8" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500" data-bind="sign.height">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Quantity</label>
+                                        <input type="number" value="2" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500" data-bind="sign.qty">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Unit Price</label>
+                                        <input type="text" value="$485.00" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500" data-bind="sign.unitPrice">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Status</label>
+                                        <select class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500" data-bind="sign.status">
+                                            <option>Draft</option>
+                                            <option selected>In Review</option>
+                                            <option>Approved</option>
+                                            <option>In Production</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Extended Price</label>
+                                        <input type="text" value="$970.00" readonly class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50">
+                                    </div>
+                                </div>
+                                <div class="mt-4 flex space-x-3">
+                                    <button class="bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-600 transition-colors">
+                                        Save Changes
+                                    </button>
+                                    <button class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sidebar -->
+                        <div class="space-y-6">
+                            <!-- Comments Panel -->
+                            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                                <h3 class="font-semibold text-gray-900 mb-4">Comments</h3>
+                                
+                                <!-- Add Comment -->
+                                <div class="mb-4">
+                                    <textarea class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-primary-500 focus:border-primary-500" rows="3" placeholder="Add a comment..." data-mock="true"></textarea>
+                                    <button class="mt-2 bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-600 transition-colors text-sm">
+                                        Post Comment
+                                    </button>
+                                </div>
+
+                                <!-- Comments List -->
+                                <div class="space-y-3">
+                                    <!-- @MAP: comments.map(comment => ( -->
+                                    <div class="border-l-4 border-primary-200 pl-4">
+                                        <div class="flex items-center space-x-2 mb-1">
+                                            <span class="text-sm font-medium text-gray-900" data-bind="comment.user.name">Sarah Johnson</span>
+                                            <span class="text-xs text-gray-500" data-bind="comment.createdAt">2 hours ago</span>
+                                        </div>
+                                        <p class="text-sm text-gray-700" data-bind="comment.body">The font size needs to be larger to meet ADA compliance. Please update to 18pt minimum.</p>
+                                    </div>
+                                    
+                                    <div class="border-l-4 border-gray-200 pl-4">
+                                        <div class="flex items-center space-x-2 mb-1">
+                                            <span class="text-sm font-medium text-gray-900">Mike Chen</span>
+                                            <span class="text-xs text-gray-500">1 day ago</span>
+                                        </div>
+                                        <p class="text-sm text-gray-700">Approved the color scheme. Looks good!</p>
+                                    </div>
+                                    <!-- @END_MAP )) -->
+                                </div>
+                            </div>
+
+                            <!-- History Panel -->
+                            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                                <h3 class="font-semibold text-gray-900 mb-4">History</h3>
+                                <div class="space-y-3">
+                                    <!-- @MAP: history.map(event => ( -->
+                                    <div class="flex items-start space-x-3">
+                                        <div class="flex-shrink-0 w-2 h-2 bg-primary-500 rounded-full mt-2"></div>
+                                        <div>
+                                            <p class="text-sm text-gray-900" data-bind="event.description">Sarah updated specifications</p>
+                                            <p class="text-xs text-gray-500" data-bind="event.timestamp">2 hours ago</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-start space-x-3">
+                                        <div class="flex-shrink-0 w-2 h-2 bg-gray-400 rounded-full mt-2"></div>
+                                        <div>
+                                            <p class="text-sm text-gray-900">Mike uploaded new artwork</p>
+                                            <p class="text-xs text-gray-500">1 day ago</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-start space-x-3">
+                                        <div class="flex-shrink-0 w-2 h-2 bg-gray-400 rounded-full mt-2"></div>
+                                        <div>
+                                            <p class="text-sm text-gray-900">Sign created</p>
+                                            <p class="text-xs text-gray-500">3 days ago</p>
+                                        </div>
+                                    </div>
+                                    <!-- @END_MAP )) -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: SignDetailPage -->
+
+                <!-- @COMPONENT: DigitalProofViewer -->
+                <div id="proofViewerPage" class="hidden space-y-6">
+                    <div class="flex justify-between items-center">
+                        <h1 class="text-2xl font-bold text-gray-900">Digital Proof Viewer</h1>
+                        <div class="flex space-x-3">
+                            <button class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors">
+                                <i class="fas fa-download mr-2"></i>Export PDF
+                            </button>
+                            <button class="bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-600 transition-colors">
+                                <i class="fas fa-paper-plane mr-2"></i>Send for Review
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-4 gap-6">
+                        <!-- Proof Canvas -->
+                        <div class="col-span-3">
+                            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h2 class="text-lg font-semibold text-gray-900">Proof Layout</h2>
+                                    <div class="flex items-center space-x-2">
+                                        <button id="addPinMode" class="bg-primary-100 text-primary-700 px-3 py-1 rounded text-sm hover:bg-primary-200 transition-colors">
+                                            <i class="fas fa-map-pin mr-1"></i>Add Pin
+                                        </button>
+                                        <select class="border border-gray-300 rounded px-2 py-1 text-sm">
+                                            <option>100% Zoom</option>
+                                            <option>75% Zoom</option>
+                                            <option>50% Zoom</option>
+                                            <option>Fit to Width</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <!-- Professional office building with multiple storefront signs -->
+                                <div id="proofCanvas" class="relative bg-gray-100 rounded-lg overflow-hidden cursor-crosshair" style="height: 600px; background-image: url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1200&h=600'); background-size: cover; background-position: center;" data-implementation="Canvas for sign layout with pinned comments">
+                                    
+                                    <!-- Sign Overlays -->
+                                    <div class="absolute top-20 left-32 w-24 h-16 bg-white bg-opacity-90 border-2 border-primary-500 rounded flex items-center justify-center cursor-pointer hover:bg-opacity-100 transition-all" data-sign-id="1">
+                                        <span class="text-xs font-medium text-gray-700">ADA-001</span>
+                                    </div>
+                                    
+                                    <div class="absolute top-32 right-40 w-20 h-12 bg-white bg-opacity-90 border-2 border-primary-500 rounded flex items-center justify-center cursor-pointer hover:bg-opacity-100 transition-all" data-sign-id="2">
+                                        <span class="text-xs font-medium text-gray-700">PKG-001</span>
+                                    </div>
+                                    
+                                    <div class="absolute bottom-24 left-1/2 transform -translate-x-1/2 w-32 h-20 bg-white bg-opacity-90 border-2 border-primary-500 rounded flex items-center justify-center cursor-pointer hover:bg-opacity-100 transition-all" data-sign-id="3">
+                                        <span class="text-xs font-medium text-gray-700">MON-001</span>
+                                    </div>
+
+                                    <!-- Comment Pins -->
+                                    <div class="absolute top-40 left-48 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center cursor-pointer hover:scale-110 transition-transform" data-comment-id="1">
+                                        <span class="text-white text-xs font-bold">1</span>
+                                    </div>
+                                    
+                                    <div class="absolute top-52 right-32 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center cursor-pointer hover:scale-110 transition-transform" data-comment-id="2">
+                                        <span class="text-white text-xs font-bold">2</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sidebar -->
+                        <div class="space-y-6">
+                            <!-- Sign Details Panel -->
+                            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                                <h3 class="font-semibold text-gray-900 mb-3">Selected Sign</h3>
+                                <div id="selectedSignDetails" class="text-sm text-gray-600">
+                                    <p>Click a sign to view details</p>
+                                </div>
+                            </div>
+
+                            <!-- Pinned Comments -->
+                            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                                <h3 class="font-semibold text-gray-900 mb-3">Pinned Comments</h3>
+                                <div class="space-y-3">
+                                    <!-- @MAP: pinnedComments.map(comment => ( -->
+                                    <div class="border-l-4 border-red-500 pl-3 cursor-pointer hover:bg-gray-50 rounded-r p-2" data-comment-id="1">
+                                        <div class="flex items-center space-x-2 mb-1">
+                                            <span class="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-white text-xs">1</span>
+                                            <span class="text-xs font-medium text-gray-900" data-bind="comment.user.name">Sarah J.</span>
+                                            <span class="text-xs text-gray-500" data-bind="comment.createdAt">2h ago</span>
+                                        </div>
+                                        <p class="text-xs text-gray-700" data-bind="comment.body">This sign needs to be moved 2 feet to the left for better visibility.</p>
+                                    </div>
+
+                                    <div class="border-l-4 border-blue-500 pl-3 cursor-pointer hover:bg-gray-50 rounded-r p-2" data-comment-id="2">
+                                        <div class="flex items-center space-x-2 mb-1">
+                                            <span class="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs">2</span>
+                                            <span class="text-xs font-medium text-gray-900">Mike C.</span>
+                                            <span class="text-xs text-gray-500">1d ago</span>
+                                        </div>
+                                        <p class="text-xs text-gray-700">Parking sign looks perfect here. Approved!</p>
+                                    </div>
+                                    <!-- @END_MAP )) -->
+                                </div>
+                            </div>
+
+                            <!-- Proof Settings -->
+                            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                                <h3 class="font-semibold text-gray-900 mb-3">Proof Settings</h3>
+                                <div class="space-y-3">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-700">Version</label>
+                                        <select class="mt-1 block w-full px-2 py-1 border border-gray-300 rounded text-sm">
+                                            <option>v1.0 (Current)</option>
+                                            <option>v0.9</option>
+                                            <option>v0.8</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-700">Status</label>
+                                        <select class="mt-1 block w-full px-2 py-1 border border-gray-300 rounded text-sm">
+                                            <option>Draft</option>
+                                            <option selected>In Review</option>
+                                            <option>Approved</option>
+                                        </select>
+                                    </div>
+                                    <button class="w-full bg-primary-500 text-white py-2 px-3 rounded text-sm hover:bg-primary-600 transition-colors">
+                                        Update Proof
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: DigitalProofViewer -->
+
+                <!-- @COMPONENT: VendorsRFQPage -->
+                <div id="vendorsPage" class="hidden space-y-6">
+                    <div class="flex justify-between items-center">
+                        <h1 class="text-2xl font-bold text-gray-900">Vendors & RFQs</h1>
+                        <button class="bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-600 transition-colors">
+                            <i class="fas fa-plus mr-2"></i>Create RFQ
+                        </button>
+                    </div>
+
+                    <!-- RFQ Management -->
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <h2 class="text-lg font-semibold text-gray-900 mb-4">Active RFQs</h2>
+                        
+                        <!-- RFQ List -->
+                        <div class="space-y-4">
+                            <!-- @MAP: rfqs.map(rfq => ( -->
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <div class="flex justify-between items-start mb-3">
+                                    <div>
+                                        <h3 class="font-medium text-gray-900" data-bind="rfq.title">Exterior Signage Package - Westfield Commons</h3>
+                                        <p class="text-sm text-gray-600" data-bind="rfq.description">Monument sign, parking signs, and wayfinding elements</p>
+                                    </div>
+                                    <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded" data-bind="rfq.status">Open</span>
+                                </div>
+                                
+                                <div class="grid grid-cols-3 gap-4 mb-4">
+                                    <div>
+                                        <span class="text-xs text-gray-600">Due Date</span>
+                                        <p class="text-sm font-medium" data-bind="rfq.dueDate">March 15, 2024</p>
+                                    </div>
+                                    <div>
+                                        <span class="text-xs text-gray-600">Bids Received</span>
+                                        <p class="text-sm font-medium" data-bind="rfq.bidCount">3</p>
+                                    </div>
+                                    <div>
+                                        <span class="text-xs text-gray-600">Lowest Bid</span>
+                                        <p class="text-sm font-medium text-green-600" data-bind="rfq.lowestBid">$245,000</p>
+                                    </div>
+                                </div>
+
+                                <!-- Bids Table -->
+                                <div class="border-t pt-4">
+                                    <h4 class="font-medium text-gray-900 mb-2">Submitted Bids</h4>
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-full">
+                                            <thead class="bg-gray-50">
+                                                <tr>
+                                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Vendor</th>
+                                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Bid Amount</th>
+                                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Lead Time</th>
+                                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-gray-200">
+                                                <!-- @MAP: bids.map(bid => ( -->
+                                                <tr>
+                                                    <td class="px-3 py-2 text-sm text-gray-900" data-bind="bid.vendor.name">ProSign Industries</td>
+                                                    <td class="px-3 py-2 text-sm font-medium text-gray-900" data-bind="bid.amount">$245,000</td>
+                                                    <td class="px-3 py-2 text-sm text-gray-600" data-bind="bid.leadTime">8 weeks</td>
+                                                    <td class="px-3 py-2 text-sm">
+                                                        <button class="text-primary-600 hover:text-primary-700 mr-3">View Details</button>
+                                                        <button class="text-green-600 hover:text-green-700">Accept</button>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="px-3 py-2 text-sm text-gray-900">Elite Signage Co.</td>
+                                                    <td class="px-3 py-2 text-sm font-medium text-gray-900">$268,500</td>
+                                                    <td class="px-3 py-2 text-sm text-gray-600">6 weeks</td>
+                                                    <td class="px-3 py-2 text-sm">
+                                                        <button class="text-primary-600 hover:text-primary-700 mr-3">View Details</button>
+                                                        <button class="text-green-600 hover:text-green-700">Accept</button>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="px-3 py-2 text-sm text-gray-900">Northwest Signs</td>
+                                                    <td class="px-3 py-2 text-sm font-medium text-gray-900">$285,750</td>
+                                                    <td class="px-3 py-2 text-sm text-gray-600">10 weeks</td>
+                                                    <td class="px-3 py-2 text-sm">
+                                                        <button class="text-primary-600 hover:text-primary-700 mr-3">View Details</button>
+                                                        <button class="text-green-600 hover:text-green-700">Accept</button>
+                                                    </td>
+                                                </tr>
+                                                <!-- @END_MAP )) -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- @END_MAP )) -->
+                        </div>
+                    </div>
+
+                    <!-- Vendor Directory -->
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <h2 class="text-lg font-semibold text-gray-900 mb-4">Vendor Directory</h2>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <!-- @MAP: vendors.map(vendor => ( -->
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h3 class="font-medium text-gray-900" data-bind="vendor.name">ProSign Industries</h3>
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">Verified</span>
+                                </div>
+                                <div class="space-y-2 mb-4">
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <i class="fas fa-map-marker-alt mr-2 text-gray-400"></i>
+                                        <span data-bind="vendor.region">Pacific Northwest</span>
+                                    </div>
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <i class="fas fa-star mr-2 text-gray-400"></i>
+                                        <span data-bind="vendor.rating">4.8/5 (24 reviews)</span>
+                                    </div>
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <i class="fas fa-tools mr-2 text-gray-400"></i>
+                                        <span data-bind="vendor.specialties">Monument, ADA, Parking</span>
+                                    </div>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button class="flex-1 bg-gray-100 text-gray-700 py-2 px-3 rounded text-sm hover:bg-gray-200 transition-colors">
+                                        View Profile
+                                    </button>
+                                    <button class="flex-1 bg-primary-100 text-primary-700 py-2 px-3 rounded text-sm hover:bg-primary-200 transition-colors">
+                                        Invite to Bid
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h3 class="font-medium text-gray-900">Elite Signage Co.</h3>
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">Verified</span>
+                                </div>
+                                <div class="space-y-2 mb-4">
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <i class="fas fa-map-marker-alt mr-2 text-gray-400"></i>
+                                        <span>West Coast</span>
+                                    </div>
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <i class="fas fa-star mr-2 text-gray-400"></i>
+                                        <span>4.6/5 (18 reviews)</span>
+                                    </div>
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <i class="fas fa-tools mr-2 text-gray-400"></i>
+                                        <span>Digital, Wayfinding, Custom</span>
+                                    </div>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button class="flex-1 bg-gray-100 text-gray-700 py-2 px-3 rounded text-sm hover:bg-gray-200 transition-colors">
+                                        View Profile
+                                    </button>
+                                    <button class="flex-1 bg-primary-100 text-primary-700 py-2 px-3 rounded text-sm hover:bg-primary-200 transition-colors">
+                                        Invite to Bid
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h3 class="font-medium text-gray-900">Northwest Signs</h3>
+                                    <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">New</span>
+                                </div>
+                                <div class="space-y-2 mb-4">
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <i class="fas fa-map-marker-alt mr-2 text-gray-400"></i>
+                                        <span>Pacific Northwest</span>
+                                    </div>
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <i class="fas fa-star mr-2 text-gray-400"></i>
+                                        <span>4.9/5 (12 reviews)</span>
+                                    </div>
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <i class="fas fa-tools mr-2 text-gray-400"></i>
+                                        <span>Traditional, Monument</span>
+                                    </div>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button class="flex-1 bg-gray-100 text-gray-700 py-2 px-3 rounded text-sm hover:bg-gray-200 transition-colors">
+                                        View Profile
+                                    </button>
+                                    <button class="flex-1 bg-primary-100 text-primary-700 py-2 px-3 rounded text-sm hover:bg-primary-200 transition-colors">
+                                        Invite to Bid
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- @END_MAP )) -->
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: VendorsRFQPage -->
+            </main>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: MainApp -->
+
+    <!-- Toast Notifications -->
+    <!-- @COMPONENT: ToastNotifications -->
+    <div id="toastContainer" class="fixed top-4 right-4 space-y-2 z-50"></div>
+    <!-- @END_COMPONENT: ToastNotifications -->
+
+    <!-- Modals -->
+    <!-- @COMPONENT: FileUploadModal -->
+    <div id="uploadModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Upload File</h3>
+                <button class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-4"></i>
+                <p class="text-gray-600 mb-2">Drop files here or click to browse</p>
+                <p class="text-sm text-gray-500">PDF, JPG, PNG up to 10MB</p>
+                <input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png" data-mock="true">
+            </div>
+            <div class="flex justify-end space-x-3 mt-6">
+                <button class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                    Cancel
+                </button>
+                <button class="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors">
+                    Upload
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: FileUploadModal -->
+
+    <script>
+        // Application State Management
+        (() => {
+            // @STATE: currentPage:string = 'login'
+            // @STATE: currentUser:object = null
+            // @STATE: currentProject:object = null
+            
+            let currentPage = 'login';
+            let isAddPinMode = false;
+            
+            // Navigation Functions
+            function showPage(pageId) {
+                // Hide all pages
+                document.querySelectorAll('[id$="Page"]').forEach(page => {
+                    page.classList.add('hidden');
+                });
+                
+                // Show login page or main app
+                if (pageId === 'login') {
+                    document.getElementById('loginPage').classList.remove('hidden');
+                    document.getElementById('mainApp').classList.add('hidden');
+                } else {
+                    document.getElementById('mainApp').classList.remove('hidden');
+                    document.getElementById('loginPage').classList.add('hidden');
+                    
+                    // Show specific page within main app
+                    if (pageId && document.getElementById(pageId)) {
+                        document.getElementById(pageId).classList.remove('hidden');
+                    }
+                }
+                
+                currentPage = pageId;
+            }
+            
+            // Authentication Simulation
+            function handleLogin(event) {
+                event.preventDefault();
+                // TODO: Implement actual authentication
+                showPage('overviewPage');
+                showToast('Welcome back! Login successful.', 'success');
+            }
+            
+            // Toast Notifications
+            function showToast(message, type = 'info') {
+                const toastContainer = document.getElementById('toastContainer');
+                const toast = document.createElement('div');
+                toast.className = `bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-w-sm transform transition-all duration-300 translate-x-full`;
+                
+                const iconClass = {
+                    'success': 'fas fa-check-circle text-green-500',
+                    'error': 'fas fa-exclamation-circle text-red-500',
+                    'warning': 'fas fa-exclamation-triangle text-yellow-500',
+                    'info': 'fas fa-info-circle text-blue-500'
+                };
+                
+                toast.innerHTML = `
+                    <div class="flex items-center">
+                        <i class="${iconClass[type]} mr-3"></i>
+                        <span class="text-gray-900">${message}</span>
+                        <button class="ml-auto text-gray-400 hover:text-gray-600" onclick="this.parentElement.parentElement.remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+                
+                toastContainer.appendChild(toast);
+                
+                // Animate in
+                setTimeout(() => {
+                    toast.classList.remove('translate-x-full');
+                }, 100);
+                
+                // Auto remove after 5 seconds
+                setTimeout(() => {
+                    toast.classList.add('translate-x-full');
+                    setTimeout(() => toast.remove(), 300);
+                }, 5000);
+            }
+            
+            // Proof Viewer Functionality
+            function setupProofViewer() {
+                const addPinButton = document.getElementById('addPinMode');
+                const proofCanvas = document.getElementById('proofCanvas');
+                
+                if (addPinButton) {
+                    addPinButton.addEventListener('click', () => {
+                        isAddPinMode = !isAddPinMode;
+                        addPinButton.classList.toggle('bg-primary-200');
+                        addPinButton.classList.toggle('bg-primary-100');
+                        proofCanvas.style.cursor = isAddPinMode ? 'crosshair' : 'default';
+                    });
+                }
+                
+                if (proofCanvas) {
+                    proofCanvas.addEventListener('click', (e) => {
+                        if (isAddPinMode) {
+                            const rect = proofCanvas.getBoundingClientRect();
+                            const x = e.clientX - rect.left;
+                            const y = e.clientY - rect.top;
+                            
+                            addCommentPin(x, y);
+                            isAddPinMode = false;
+                            addPinButton.classList.remove('bg-primary-200');
+                            addPinButton.classList.add('bg-primary-100');
+                            proofCanvas.style.cursor = 'default';
+                        }
+                    });
+                }
+                
+                // Sign overlay click handlers
+                document.querySelectorAll('[data-sign-id]').forEach(signOverlay => {
+                    signOverlay.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const signId = signOverlay.dataset.signId;
+                        showSignDetails(signId);
+                    });
+                });
+                
+                // Comment pin click handlers
+                document.querySelectorAll('[data-comment-id]').forEach(commentPin => {
+                    commentPin.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const commentId = commentPin.dataset.commentId;
+                        highlightComment(commentId);
+                    });
+                });
+            }
+            
+            function addCommentPin(x, y) {
+                // TODO: Implement comment pin creation with backend API
+                const proofCanvas = document.getElementById('proofCanvas');
+                const pinCount = proofCanvas.querySelectorAll('[data-comment-id]').length + 1;
+                
+                const pin = document.createElement('div');
+                pin.className = 'absolute w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center cursor-pointer hover:scale-110 transition-transform';
+                pin.style.left = `${x - 12}px`;
+                pin.style.top = `${y - 12}px`;
+                pin.dataset.commentId = `new-${pinCount}`;
+                pin.innerHTML = `<span class="text-white text-xs font-bold">${pinCount}</span>`;
+                
+                proofCanvas.appendChild(pin);
+                
+                // Add click handler
+                pin.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    highlightComment(pin.dataset.commentId);
+                });
+                
+                showToast('Comment pin added. Click to add your comment.', 'success');
+            }
+            
+            function showSignDetails(signId) {
+                const detailsPanel = document.getElementById('selectedSignDetails');
+                // Mock sign data - in real app, fetch from API
+                const signData = {
+                    '1': { name: 'ADA-001', type: 'ADA Room ID', location: 'Building A - Lobby', status: 'In Review' },
+                    '2': { name: 'PKG-001', type: 'Parking Sign', location: 'Parking Lot North', status: 'Approved' },
+                    '3': { name: 'MON-001', type: 'Monument Sign', location: 'Main Entrance', status: 'Draft' }
+                };
+                
+                const sign = signData[signId];
+                if (sign && detailsPanel) {
+                    detailsPanel.innerHTML = `
+                        <h4 class="font-medium text-gray-900 mb-2">${sign.name}</h4>
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-xs">
+                                <span class="text-gray-600">Type:</span>
+                                <span>${sign.type}</span>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-gray-600">Location:</span>
+                                <span>${sign.location}</span>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-gray-600">Status:</span>
+                                <span class="px-1 py-0.5 bg-yellow-100 text-yellow-800 rounded text-xs">${sign.status}</span>
+                            </div>
+                        </div>
+                        <button class="w-full mt-3 bg-primary-500 text-white py-1 px-2 rounded text-xs hover:bg-primary-600 transition-colors">
+                            View Full Details
+                        </button>
+                    `;
+                }
+            }
+            
+            function highlightComment(commentId) {
+                // Remove existing highlights
+                document.querySelectorAll('[data-comment-id]').forEach(comment => {
+                    comment.classList.remove('ring-2', 'ring-yellow-400');
+                });
+                
+                // Highlight selected comment pin and sidebar comment
+                const pin = document.querySelector(`[data-comment-id="${commentId}"]`);
+                const sidebarComment = document.querySelector(`.border-l-4[data-comment-id="${commentId}"]`);
+                
+                if (pin) {
+                    pin.classList.add('ring-2', 'ring-yellow-400');
+                }
+                
+                if (sidebarComment) {
+                    sidebarComment.classList.add('ring-2', 'ring-yellow-400');
+                    sidebarComment.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }
+            
+            // Navigation Event Listeners
+            function setupNavigation() {
+                // Sidebar navigation
+                document.querySelectorAll('aside a[href^="#"]').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const targetPage = link.getAttribute('href').slice(1) + 'Page';
+                        showPage(targetPage);
+                        
+                        // Update active state
+                        document.querySelectorAll('aside a').forEach(a => {
+                            a.classList.remove('bg-primary-50', 'text-primary-700');
+                            a.classList.add('text-gray-600');
+                        });
+                        link.classList.add('bg-primary-50', 'text-primary-700');
+                        link.classList.remove('text-gray-600');
+                    });
+                });
+                
+                // Login form submission
+                const loginForm = document.querySelector('#loginPage form');
+                if (loginForm) {
+                    loginForm.addEventListener('submit', handleLogin);
+                }
+            }
+            
+            // Initialize Application
+            function init() {
+                setupNavigation();
+                setupProofViewer();
+                
+                // Show login page initially
+                showPage('login');
+                
+                // TODO: Check for existing session and auto-login
+                console.log('SignForge application initialized');
+            }
+            
+            // Start application when DOM is ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+            
+            // Expose functions globally for demo purposes
+            window.SignForge = {
+                showPage,
+                showToast,
+                handleLogin
+            };
+        })();
+    </script>
+</body>
+</html>

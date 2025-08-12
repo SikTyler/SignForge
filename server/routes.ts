@@ -5,7 +5,7 @@ import {
   insertSignSchema, insertCommentSchema, insertDrawingSetSchema, insertSpecPageSchema, 
   insertRfqSchema, insertBidSchema, insertProjectSchema, insertMasterSignTypeSchema,
   insertProjectSignTypeSchema, insertTakeoffMarkerSchema
-} from "@shared/schema";
+} from "@shared/schema-sqlite";
 import multer from "multer";
 import path from "path";
 import fs from "fs";

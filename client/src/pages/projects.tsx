@@ -28,8 +28,8 @@ interface Project {
 
 const createProjectSchema = z.object({
   name: z.string().min(1, "Project name is required"),
-  address: z.string().min(1, "Address is required"), 
-  clientOrg: z.string().min(1, "Client organization is required"),
+  address: z.string().optional(), 
+  clientOrg: z.string().optional(),
   status: z.enum(["active", "pending", "completed", "on_hold"]).default("active"),
   logo: z.instanceof(File).optional()
 });

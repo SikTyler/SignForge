@@ -7,7 +7,7 @@ import {
   type Rfq, type InsertRfq, type Bid, type InsertBid, type Proof, type ProofItem,
   type TakeoffPage, type InsertTakeoffPage, type MasterSignType, type InsertMasterSignType,
   type ProjectSignType, type InsertProjectSignType, type TakeoffMarker, type InsertTakeoffMarker
-} from "@shared/schema";
+} from "@shared/schema-sqlite";
 
 export interface IStorage {
   // Users
