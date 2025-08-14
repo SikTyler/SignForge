@@ -1,0 +1,105 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Design tokens */
+@layer base {
+	:root {
+		/* Neutrals (light) */
+		--background: 0 0% 98%; /* #FAFAFA */
+		--foreground: 0 0% 4%; /* #0A0A0A */
+		--card: 0 0% 100%; /* #FFFFFF */
+		--card-foreground: 0 0% 4%;
+		--popover: 0 0% 100%;
+		--popover-foreground: 0 0% 4%;
+		/* Accent blue (tailwind blue-600 base) */
+		--primary: 221 83% 53%;
+		--primary-foreground: 0 0% 98%;
+		--secondary: 0 0% 96%;
+		--secondary-foreground: 0 0% 9%;
+		--muted: 0 0% 96%;
+		--muted-foreground: 0 0% 45%;
+		--accent: 221 83% 53%;
+		--accent-foreground: 0 0% 98%;
+		--destructive: 0 84% 60%;
+		--destructive-foreground: 0 0% 98%;
+		--border: 0 0% 90%; /* #E6E6E6 */
+		--input: 0 0% 90%;
+		--ring: 221 83% 53%;
+		/* Radii */
+		--radius: 12px; /* base 12px */
+	}
+
+	.dark {
+		/* Neutrals (dark) */
+		--background: 0 0% 4%; /* #0A0A0A */
+		--foreground: 0 0% 96%; /* #F5F5F5 */
+		--card: 0 0% 7%; /* #121212 */
+		--card-foreground: 0 0% 96%;
+		--popover: 0 0% 7%;
+		--popover-foreground: 0 0% 96%;
+		--primary: 221 83% 53%;
+		--primary-foreground: 0 0% 98%;
+		--secondary: 0 0% 10%;
+		--secondary-foreground: 0 0% 96%;
+		--muted: 0 0% 10%;
+		--muted-foreground: 0 0% 63%;
+		--accent: 221 83% 53%;
+		--accent-foreground: 0 0% 98%;
+		--destructive: 0 63% 31%;
+		--destructive-foreground: 0 0% 98%;
+		--border: 0 0% 15%; /* #272727 */
+		--input: 0 0% 15%;
+		--ring: 221 83% 53%;
+	}
+}
+
+@layer base {
+	/* Apply global border color token without Tailwind utility to avoid v4 error */
+	*, ::before, ::after { border-color: hsl(var(--border)); }
+	html { font-size: 16px; }
+	body { @apply bg-background text-foreground; font-family: 'Helvetica','Arial','ui-sans-serif','system-ui'; }
+	/* Focus ring - always visible when keyboarding */
+	:focus-visible {
+		outline: 2px solid hsl(var(--ring));
+		outline-offset: 2px;
+	}
+}
+
+/* Density: compact reduces paddings and gaps by ~20% */
+@layer utilities {
+	.sg-compact .sg-card-padding { padding: 0.8rem !important; }
+	.sg-compact .sg-page-gutter { padding-left: 1.25rem !important; padding-right: 1.25rem !important; }
+	.sg-compact .sg-table-row { height: 2.25rem !important; }
+	.sg-compact .sg-kpi { padding: 0.75rem !important; }
+}
+
+/* Card aesthetics */
+@layer components {
+	.sg-card { @apply bg-card rounded-2xl border shadow-none; }
+	.sg-card:hover { box-shadow: 0 6px 20px 0 rgb(0 0 0 / 0.06); }
+	.sg-card-header { @apply px-5 py-4 border-b border-border/60; }
+	.sg-card-content { @apply px-5 py-4; }
+}
+
+/* Table polish */
+@layer components {
+	.sg-table { @apply w-full text-[14px]; }
+	.sg-table thead { @apply sticky top-0 bg-card z-10; }
+	.sg-table th { @apply text-left font-medium text-muted-foreground p-2 border-b; }
+	.sg-table td { @apply p-2 align-middle; }
+	.sg-table tbody tr:nth-child(even) { background-color: hsl(var(--muted) / 0.5); }
+	.sg-table tbody tr:hover { background-color: hsl(var(--accent) / 0.08); }
+	.sg-table .sg-row-selected { background-color: hsl(var(--accent) / 0.12); box-shadow: inset 2px 0 0 0 hsl(var(--accent)); }
+}
+
+/* Sidebar active indicator */
+@layer components {
+	.sg-nav-item { @apply w-full justify-start rounded-lg; }
+	.sg-nav-item-active { @apply bg-[hsl(var(--accent)_/_0.08)] text-[hsl(var(--accent))]; box-shadow: inset 3px 0 0 0 hsl(var(--accent)); }
+}
+
+/* KPI trend bar */
+@layer components {
+	.sg-trend-bar { height: 4px; border-radius: 9999px; background: linear-gradient(90deg, hsl(var(--accent)) 0%, hsl(var(--accent) / 0.2) 100%); }
+}

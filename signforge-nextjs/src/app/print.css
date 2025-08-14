@@ -1,0 +1,53 @@
+/* Print styles for SignForge proof pages */
+@media print {
+  /* Hide non-essential elements */
+  header,
+  nav,
+  .sidebar,
+  button,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Optimize for 11x17 landscape */
+  @page {
+    size: 11in 17in landscape;
+    margin: 0.5in;
+  }
+
+  /* Ensure proper page breaks */
+  .proof-grid {
+    page-break-inside: avoid;
+  }
+
+  /* Optimize artwork tiles for printing */
+  .artwork-tile {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Ensure good contrast for printing */
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Optimize card layouts for print */
+  .card {
+    border: 1px solid #ccc !important;
+    background: white !important;
+    box-shadow: none !important;
+  }
+
+  /* Ensure text is readable */
+  .text-muted-foreground {
+    color: #666 !important;
+  }
+
+  /* Optimize badges for print */
+  .badge {
+    border: 1px solid #ccc !important;
+    background: #f5f5f5 !important;
+    color: #333 !important;
+  }
+}

@@ -185,3 +185,4 @@ export default function NewProjectDialog({ onProjectCreated }: NewProjectDialogP
     </Dialog>
   );
 }
+
