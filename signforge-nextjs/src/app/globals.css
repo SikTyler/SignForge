@@ -103,3 +103,13 @@
 @layer components {
 	.sg-trend-bar { height: 4px; border-radius: 9999px; background: linear-gradient(90deg, hsl(var(--accent)) 0%, hsl(var(--accent) / 0.2) 100%); }
 }
+
+/* Text utilities */
+@layer utilities {
+	.line-clamp-2 {
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+}

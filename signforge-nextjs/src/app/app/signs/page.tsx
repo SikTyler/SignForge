@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/lib/utils';
+import { PageHeader } from '@/components/common/page-header';
 import {
   Plus,
   Palette,
@@ -86,15 +87,10 @@ export default function GlobalSignsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Global Signs</h1>
-          <p className="text-muted-foreground">
-            Manage universal sign types, pin colors, and presets
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="Global Signs"
+        subtitle="Manage universal sign types, pin colors, and presets"
+      />
 
       {/* Category Tabs */}
       <div className="flex space-x-1 bg-muted p-1 rounded-lg">

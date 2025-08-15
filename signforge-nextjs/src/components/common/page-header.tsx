@@ -1,26 +1,26 @@
-"use client";
+'use client';
 
-import * as React from 'react';
-import { cn } from '@/lib/utils';
+import React from 'react';
 
 interface PageHeaderProps {
 	title: string;
 	subtitle?: string;
-	className?: string;
-	actions?: React.ReactNode;
+	children?: React.ReactNode; // For actions
 }
 
-export function PageHeader({ title, subtitle, className, actions }: PageHeaderProps) {
+export function PageHeader({ title, subtitle, children }: PageHeaderProps) {
 	return (
-		<div className={cn('flex items-start justify-between sg-page-gutter', className)}>
-			<div>
-				<h1 className="text-2xl font-semibold leading-tight tracking-tight">{title}</h1>
+		<div className="flex items-start justify-between mb-6">
+			<div className="space-y-1">
+				<h1 className="text-2xl font-semibold text-foreground">{title}</h1>
 				{subtitle && (
-					<p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
+					<p className="text-sm text-muted-foreground">{subtitle}</p>
 				)}
 			</div>
-			{actions && (
-				<div className="flex items-center space-x-2">{actions}</div>
+			{children && (
+				<div className="flex items-center space-x-2">
+					{children}
+				</div>
 			)}
 		</div>
 	);

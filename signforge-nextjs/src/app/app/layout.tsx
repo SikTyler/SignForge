@@ -30,7 +30,7 @@ export default function AppLayout({ children }: { children: React.ReactNode; }) 
 					<Sidebar />
 					<div className="flex-1 flex flex-col overflow-hidden">
 						<Header />
-						<main id="main" className="flex-1 overflow-y-auto p-6">
+						<main id="main" className="flex-1 overflow-y-auto p-6 sg-page-gutter">
 							{children}
 						</main>
 					</div>

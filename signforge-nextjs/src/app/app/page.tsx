@@ -42,21 +42,20 @@ export default function DashboardPage() {
 			<PageHeader
 				title="Dashboard"
 				subtitle="Overview of your signage projects and activities"
-				actions={(
-					<Select value={timeframe} onValueChange={setTimeframe}>
-						<SelectTrigger className="w-32 h-9">
-							<SelectValue />
-						</SelectTrigger>
-						<SelectContent>
-							{timeframes.map((tf) => (
-								<SelectItem key={tf.value} value={tf.value}>
-									{tf.label}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-				)}
-			/>
+			>
+				<Select value={timeframe} onValueChange={setTimeframe}>
+					<SelectTrigger className="w-32 h-9">
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent>
+						{timeframes.map((tf) => (
+							<SelectItem key={tf.value} value={tf.value}>
+								{tf.label}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+			</PageHeader>
 
 			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 				{kpiCards.map((card) => (

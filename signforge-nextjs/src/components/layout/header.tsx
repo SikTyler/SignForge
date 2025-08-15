@@ -15,7 +15,7 @@ export function Header() {
 	return (
 		<header className="sticky top-0 z-40 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
 			<a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-2 focus:z-50 bg-card text-foreground px-3 py-1 rounded ring-2 ring-primary">Skip to content</a>
-			<div className="h-14 flex items-center px-6">
+			<div className="h-14 flex items-center px-6 sg-page-gutter">
 				{/* Left: breadcrumbs / context */}
 				<nav aria-label="Breadcrumb" className="text-sm text-muted-foreground">
 					{/* Placeholder: can be replaced with real breadcrumbs per route */}
